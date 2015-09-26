@@ -1,0 +1,151 @@
+#!/usr/bin/perl
+
+use strict;
+
+description("Read register");
+run_as_root();
+
+sub usage {
+    my $exit_code = shift;
+
+    print <<EOF;
+usage: $SCRIPT <offset> [<bits>]
+
+Read the register value at <offset>.
+
+<offset> is in hex.
+<bits> is an integer or bitfield.
+
+Example:
+    rreg c120 15:0
+EOF
+
+    exit $exit_code;
+}
+
+# get_bit(value, index)
+# Returns the bit at index
+sub get_bit {
+    my ($value, $index) = @_;
+    return ($value >> $index) & 0x1;
+}
+
+# print_graphic(hex, low, high)
+#
+# Prints a graphical binary field that shows all the bits
+# within the field.
+sub print_graphic {
+    my ($hex, $low, $high) = @_;
+    my $out = "";
+    my $bit_index = "";
+    my $field_size = $high - $low + 1;
+
+    return if $field_size == 1;
+
+    $out .= "+---" x $field_size . "+\n|";
+    for my $index ($low..$high) {
+        my $i = $high - $index + $low;
+        $i = $low if $field_size == 1;
+
+        $out .= " " . get_bit($hex, $i) . "  ";
+        if (($index == $low) ||
+            ($index == $high) ||
+            !($i % 4)) {
+            $bit_index .= sprintf(" %-3s", "D$i");
+        } else {
+            $bit_index .= "    ";
+        }
+    }
+    $out =~ s/.$/|/;
+    $out .= "\n" . "+---" x $field_size . "+\n";
+    $out = "$bit_index\n" .$out;
+
+    print "$out\n";
+}
+
+# print_bitfield(value, low, high)
+#
+# Prints the value at range.
+sub print_bitfield {
+    my ($value, $low, $high) = @_;
+    my $mask = genmask($low, $high);
+
+    if ($high == $low) {
+        print "Bit [$low]:\n";
+    } else {
+        print "Bits [$high:$low]:\n";
+    }
+
+    my $bits = ($value & $mask) >> $low;
+
+    printf("  Hex: %x\n" , $bits);
+    printf("  Decimal: %d\n", $bits);
+    printf("  Binary: %0*b\n", $high - $low + 1, $bits);
+}
+
+# print_bin(hex)
+#
+# Prints the hex value to binary and space separated every nibble
+sub binary_str {
+    my $value = shift;
+    my $out = "";
+
+    for my $index (0..7) {
+        my $shift = (7 - $index) * 4;
+        my $nibble = ($value >> $shift) & 0xf;
+        $out .= sprintf("%04b ", $nibble);
+    }
+
+    return $out;
+}
+
+# print_all(hex, low, high)
+#
+# Calls print_graphic() print_value() and print_bin() and prints a
+# graphical binary field that shows all the bits within the field.
+sub print_all {
+    my $offset = shift;
+    my $value = shift;
+    my $bitfield = shift;
+    my ($low, $high) = parse_bitfield($bitfield);
+
+    print  "\n";
+    printf "Register: %x\n", $offset;
+    printf "Hex: %x\n", $value;
+    printf "Binary: %s\n", binary_str($value);
+    print  "\n";
+    print_bitfield($value, $low, $high);
+    print  "\n";
+    print_graphic($value, $low, $high);
+}
+
+sub main {
+    my $offset = shift @ARGV;
+    my $bitfield = shift @ARGV;
+
+    usage(0) unless defined $offset;
+
+    if (!validate_hex($offset)) {
+        die("Invalid hex offset $offset\n");
+    }
+
+    $offset = hex($offset);
+
+    my $no_base;
+    if ($SCRIPT eq "rd") {
+	$no_base = 1;
+    }
+
+    my $value = rreg($offset, $no_base);
+    usage(1) unless defined $value;
+
+    if (defined $bitfield) {
+        print_all($offset, $value, $bitfield);
+    } else {
+        printf "%08x\n", $value;
+    }
+
+    exit(0);
+}
+
+main();

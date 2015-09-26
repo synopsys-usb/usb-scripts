@@ -1,0 +1,17 @@
+#!/usr/bin/perl
+
+use strict;
+
+description("Load the dwc2 module");
+no_options();
+run_as_root();
+
+system("$SCRIPT_DIR/unload") == 0 or die;
+system("$BIN_DIR/initram") == 0 or die; 
+
+if (plat_is_x86()) {
+    system("modprobe dwc2_pci") == 0 or die;
+}
+
+system("modprobe dwc2") == 0 or die;
+system("modprobe g_mass_storage file=/dev/ram0 iSerialNumber=012345678901") == 0 or die;

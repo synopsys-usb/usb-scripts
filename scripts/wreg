@@ -1,0 +1,80 @@
+#!/usr/bin/perl
+
+use strict;
+
+description("Write register");
+run_as_root();
+
+sub print_usage {
+    my $exit_code = shift @_;
+
+    print <<EOF;
+usage: $SCRIPT <offset> <value> [<bits>]
+
+Write <value> to the register at <offset>. If writing to a bitfield,
+the bitfield is set by read-modify-write.
+
+<value> and <offset> is in hex.
+<bits> is an integer or range.
+
+Example:
+    wreg c110 2 13:12
+EOF
+
+    exit $exit_code;
+}
+
+sub write_bitfield {
+    my ($offset, $bitfield, $value) = @_;
+    my ($low, $high) = parse_bitfield($bitfield);
+
+    my $mask = genmask($low, $high);
+    my $reg = rreg($offset);
+
+    # Clear the bitfield
+    $reg &= ~$mask;
+
+    $value = $value << $low;
+    if ($value != ($value & $mask)) {
+        die "Value is too large for bitfield\n";
+    }
+
+    # Set the bitfield
+    $reg |= $value;
+    wreg($offset, $reg) or die;
+}
+
+sub main {
+    my $offset = shift @ARGV;
+    my $value = shift @ARGV;
+    my $bitfield = shift @ARGV;
+
+    print_usage(0) unless defined $offset and defined $value;
+
+    if (!validate_hex($offset)) {
+        warn("Invalid hex offset $offset\n");
+        print_usage(-1);
+    }
+    if (!validate_hex($value)) {
+        warn("Invalid hex value $value\n");
+        print_usage(-1);
+    }
+
+    $offset = hex($offset);
+    $value = hex($value);
+
+    my $no_base;
+    if ($SCRIPT eq "wr") {
+	$no_base = 1;
+    }
+
+    if (defined $bitfield) {
+        write_bitfield($offset, $bitfield, $value);
+    } else {
+        wreg($offset, $value, $no_base) or die;
+    }
+
+    exit(0);
+}
+
+main();

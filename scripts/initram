@@ -1,0 +1,20 @@
+#!/usr/bin/perl
+
+use strict;
+
+run_as_root();
+
+my $size;
+
+cmd("cat /sys/class/block/ram0/size", \$size)
+    or die "Could not determine size of /dev/ram0";
+
+$size *= 512;
+
+if ($size == 1024*1024*64) {
+    cmd("$BIN_DIR/initram_64mb") or die;
+} elsif ($size == 1024*1024*1024*2) {
+    cmd("$BIN_DIR/initram_2gb") or die;
+} else {
+    die "/dev/ram0 size $size not supported";
+}

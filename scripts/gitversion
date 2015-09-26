@@ -1,0 +1,31 @@
+#!/usr/bin/perl
+
+use strict;
+use Cwd qw(abs_path);
+use File::Basename qw(dirname);
+use IPC::Run 'run';
+
+my $DIR = dirname(abs_path($0));
+$DIR = "$DIR/..";
+
+if (!-d "$DIR/.git") {
+    # Versioning not support outside of git
+    if (!-f "$DIR/.gitversion") {
+	die "Not in git repository";
+    }
+
+    run(["cp", "$DIR/.gitversion", "$DIR/VERSION"])
+      or die("Couldn't create VERSION\n");
+
+    exit(0);
+}
+
+my $in;
+my $out;
+my $err;
+
+run(["git", "rev-parse", "--short", "HEAD"], \$in, \$out, \$err)
+    or die "Couldn't get version";
+
+chomp $out;
+system("echo $out > $DIR/VERSION");

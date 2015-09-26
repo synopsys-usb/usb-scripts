@@ -1,0 +1,3 @@
+#!/bin/sh
+
+lsusb -v -d 053f: | less -FX

@@ -1,0 +1,15 @@
+#!/usr/bin/perl
+
+use strict;
+
+description("Unload the dwc3 xhci driver");
+no_options();
+run_as_root();
+
+if (plat_is_arc()) {
+    rmmod("dwc3");
+    rmmod("xhci-plat-hcd");
+} elsif (plat_is_x86()) {
+    rmmod("xhci-hcd");
+    rmmod("xhci-pci");
+}

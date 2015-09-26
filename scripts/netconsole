@@ -1,0 +1,53 @@
+#!/usr/bin/perl
+
+use strict;
+
+run_as_root();
+
+sub print_usage {
+    print <<EOF;
+usage: $SCRIPT <ip-address> [<eth>]
+usage: $SCRIPT listen
+EOF
+    exit;
+}
+
+sub find_network_device {
+    my @ifconfig = `ifconfig`;
+    die if ($?);
+
+    my $eth;
+
+    for (@ifconfig) {
+        if (m/^(\S+\d*)/) {
+            $eth = $1;
+            next if ($eth =~ m/^lo/);
+            last;
+        }
+    }
+
+    return $eth;
+}
+
+sub main {
+    my $ip = shift @ARGV;
+    my $eth = shift @ARGV;
+
+    print_usage() if (!defined($ip));
+
+    if ($ip eq "listen") {
+        exec("nc -u -l 6666");
+    }
+
+    if (!defined($eth)) {
+        $eth = find_network_device();
+    }
+
+    rmmod("netconsole");
+    write_file("/proc/sys/kernel/printk", "7 7 7 7");
+    system("dmesg -n 7") == 0 or die;
+
+    system("modprobe netconsole netconsole=\@/$eth,6666\@$ip/") == 0 or die;
+}
+
+main();

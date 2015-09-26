@@ -1,0 +1,17 @@
+#!/usr/bin/perl
+
+use strict;
+
+description("Load the dwc3 xhci driver");
+no_options();
+run_as_root();
+
+cmd("$SCRIPT_DIR/unload");
+
+if (plat_is_arc()) {
+    cmd("modprobe xhci-plat-hcd");
+    cmd("modprobe dwc3");
+} else (plat_is_x86()) {
+    cmd("modprobe xhci-pci");
+    cmd("modprobe xhci-hcd");
+}

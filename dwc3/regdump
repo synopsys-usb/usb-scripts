@@ -1,0 +1,11 @@
+#!/usr/bin/perl
+
+use strict;
+
+description("Print all dwc3 registers");
+no_options();
+run_as_root();
+
+my $debug = dwc3_debugfs() or die "No debugfs";
+
+system("cat $debug/regdump") == 0 or die;

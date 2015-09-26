@@ -1,0 +1,10 @@
+#!/usr/bin/perl
+
+use strict;
+
+description("Enable dwc3 driver trace");
+no_options();
+run_as_root();
+
+write_file("/sys/kernel/debug/tracing/buffer_size_kb", "4096") or die;
+write_file("/sys/kernel/debug/tracing/events/dwc3/enable", "1") or die;
