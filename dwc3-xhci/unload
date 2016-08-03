@@ -7,9 +7,9 @@ no_options();
 run_as_root();
 
 if (plat_is_arc()) {
+    rmmod("xhci_plat_hcd");
     rmmod("dwc3");
-    rmmod("xhci-plat-hcd");
 } elsif (plat_is_x86()) {
-    rmmod("xhci-hcd");
-    rmmod("xhci-pci");
+    rmmod("xhci_pci");
+    rmmod("xhci_hcd");
 }
