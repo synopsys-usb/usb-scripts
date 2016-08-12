@@ -2,7 +2,6 @@
 
 use strict;
 use warnings;
-use File::Slurp;
 use File::Basename;
 
 my $moddir = shift @ARGV;
@@ -21,6 +20,26 @@ die "No files to install" unless @files;
 if (!-d $dir) {
     system("mkdir -p $dir") == 0
         or die "Invalid directory $dir";
+}
+
+sub read_file {
+    my $file = shift;
+
+    open(my $fh, '<', $file) or die "can't read $file";
+    local $/ = undef;
+    my $contents = <$fh>;
+    close $fh;
+
+    return $contents;
+}
+
+sub write_file {
+    my $file = shift;
+    my $content = shift;
+
+    open(my $fh, '>', $file) or die "can't write $file";
+    print $fh $content;
+    close $fh;
 }
 
 my $file;
@@ -52,5 +71,4 @@ for $file (@files) {
         die "Couldn't install $file";
     }
 }
-
 
