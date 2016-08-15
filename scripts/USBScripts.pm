@@ -170,12 +170,12 @@ sub base {
     } elsif (plat_is_x86()) {
         my $pci;
 
-        _cmd("lspci -v -d 16c3:", \$pci)
+        _cmd("lspci -n -d 16c3:", \$pci)
             or die("Couldn't examine PCI bus, check lspci\n");
 
         my @ids;
 
-        while ($pci =~ m/USB .* 16c3\:([\da-fA-f]+)/g) {
+        while ($pci =~ m/16c3\:([\da-fA-f]+)/g) {
             push @ids, $1;
         }
 
