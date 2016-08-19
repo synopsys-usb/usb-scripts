@@ -1,7 +1,7 @@
 INSTALL_DIR	:= $(INSTALL_DIR)
 
 SH_SCRIPTS := lssnps
-PERL_SCRIPTS := initram netconsole rreg wreg dwc.pl
+PERL_SCRIPTS := initram netconsole rreg wreg dwc.pl id
 PERL_MODULES := USBScripts.pm
 OTHER := completions.sh
 

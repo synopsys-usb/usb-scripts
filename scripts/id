@@ -1,0 +1,21 @@
+#!/usr/bin/perl
+
+use strict;
+
+description("Print controller id");
+run_as_root();
+no_options();
+
+sub main {
+    my $id;
+
+    if ($SCRIPT eq "dwc2") {
+        $id = rreg(0x40);
+    } else {
+	$id = rreg(0xc120);
+    }
+
+    printf("id = %x\n", $id);
+}
+
+main();
