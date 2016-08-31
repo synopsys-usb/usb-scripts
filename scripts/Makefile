@@ -18,7 +18,7 @@ make_links:
 	@ln -fs dwc.pl $(INSTALL_DIR)/dwc3
 	@ln -fs dwc.pl $(INSTALL_DIR)/dwc2
 	@ln -fs rreg $(INSTALL_DIR)/rd
-	@ln -fs rreg $(INSTALL_DIR)/wr
+	@ln -fs wreg $(INSTALL_DIR)/wr
 
 install: install_run install_other make_links
 
