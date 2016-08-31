@@ -26,7 +26,13 @@ if ($tmp =~ /dwc3/ and $tmp =~ /g_mass_storage/) {
     print "Driver is NOT loaded\n";
 }
 
-my $GDBGLTSSM = rreg(0xc164);
+my $GDBGLTSSM;
+if ($snpsid == 0x3331) {
+    $GDBGLTSSM = rreg(0xd050);
+} else {
+    $GDBGLTSSM = rreg(0xc164);
+}
+
 my $num = $GDBGLTSSM;
 $num = $num & 0x03C00000;
 $num = ($num >> 22) ;
