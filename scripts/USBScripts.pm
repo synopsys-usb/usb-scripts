@@ -211,9 +211,8 @@ sub base {
 }
 
 sub rreg {
-    my $offset = shift;
+    my $address = shift;
     my $no_base = shift;
-    my $address = $offset;
 
     if (!(defined $no_base)) {
 	$address += base();
