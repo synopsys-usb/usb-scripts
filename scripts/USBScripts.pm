@@ -147,6 +147,14 @@ sub plat_is_arc {
     return 0;
 }
 
+sub plat_is_arm_juno {
+    my $plat = plat();
+    if ($plat =~ m/aarch64/) {
+        return 1;
+    }
+    return 0;
+}
+
 my $_BASE;
 
 my $PCI_PIDS = {
@@ -165,7 +173,9 @@ sub base {
         return $_BASE;
     }
 
-    if (plat_is_arc()) {
+    if (plat_is_arm_juno()) {
+        $_BASE = 0x60000000;
+    } elsif (plat_is_arc()) {
         $_BASE = 0xd0000000;
     } elsif (plat_is_x86()) {
         my $pci;
