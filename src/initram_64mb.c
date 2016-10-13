@@ -7,6 +7,21 @@
 #define SIZE 4096
 
 static uint8_t ram[];
+static uint8_t zero[65536];
+
+static void init_ram(FILE *fp)
+{
+	int i;
+#ifdef DEBUG
+	printf("Initializaing RAM\n");
+#endif
+	memset(zero, 0, 65536);
+	fseek(fp, 0, SEEK_SET);
+
+	for (i=0; i<256; i++) {
+		fwrite(zero, 65536, 1, fp);
+	}
+}
 
 static void write_block(FILE *fp, size_t block_num, uint8_t *buf)
 {
@@ -34,6 +49,8 @@ int main(void)
 #ifdef DEBUG
 	printf("\nInitializing RAM\n");
 #endif
+
+	init_ram(ramfp);
 
 	while (1) {
 		size_t block_num = *((size_t *)buf);
