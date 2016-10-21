@@ -141,7 +141,7 @@ sub plat_is_x86 {
 
 sub plat_is_arc {
     my $plat = plat();
-    if ($plat =~ m/arc/) {
+    if ($plat =~ m/\barc\b/) {
         return 1;
     }
     return 0;
