@@ -1,5 +1,5 @@
 INSTALL_DIR := $(INSTALL_DIR)/dwc3-xhci_commands
-SCRIPTS := load unload
+SCRIPTS := load unload enable_trace trace
 
 install:
 	@$(INSTALL) 0755 $(INSTALL_DIR) $(SCRIPTS)

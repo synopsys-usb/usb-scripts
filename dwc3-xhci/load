@@ -15,3 +15,5 @@ if (plat_is_arc() or plat_is_juno()) {
     cmd("modprobe xhci_pci");
     cmd("modprobe xhci_hcd");
 }
+
+cmd("$SCRIPT_DIR/enable_trace");
