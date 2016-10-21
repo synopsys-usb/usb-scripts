@@ -7,5 +7,6 @@ install:
 	@ln -fs ../rreg $(INSTALL_DIR)/rreg
 	@ln -fs ../wreg $(INSTALL_DIR)/wreg
 	@ln -fs ../trace $(INSTALL_DIR)/trace
+	@ln -fs $(INSTALL_DIR)/../dwc3_commands/regdump $(INSTALL_DIR)/regdump
 
 .PHONY: install
