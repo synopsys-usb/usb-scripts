@@ -384,8 +384,8 @@ sub no_options {
 }
 
 our @EXPORT = qw($BIN_DIR $SCRIPT_DIR $SCRIPT $TYPE rreg
-wreg run_as_root plat_is_x86 plat_is_arc dwc3_debugfs dwc2_debugfs
-rmmod validate_hex parse_bitfield genmask description no_options
-read_file write_file cmd autodie base);
+wreg run_as_root plat_is_x86 plat_is_arc plat_is_juno dwc3_debugfs
+dwc2_debugfs rmmod validate_hex parse_bitfield genmask description
+no_options read_file write_file cmd autodie base);
 
 1;
