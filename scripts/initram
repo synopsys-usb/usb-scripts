@@ -9,6 +9,8 @@ my $size;
 cmd("cat /sys/class/block/ram0/size", \$size)
     or die "Could not determine size of /dev/ram0";
 
+cmd("dd if=/dev/zero of=/dev/ram0 count=256 bs=64k 2> /dev/null") or die;
+
 $size *= 512;
 
 if ($size == 1024*1024*64) {
