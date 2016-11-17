@@ -14,6 +14,7 @@ if (plat_is_x86()) {
     cmd("modprobe dwc3_pci");
 }
 
+system("modprobe -q phy-generic");
 cmd("modprobe dwc3");
 cmd("$SCRIPT_DIR/enable_trace");
 cmd("modprobe g_mass_storage file=/dev/ram0 iSerialNumber=000020160529 removable=0");

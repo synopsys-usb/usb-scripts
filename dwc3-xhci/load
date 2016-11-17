@@ -9,6 +9,7 @@ run_as_root();
 cmd("$SCRIPT_DIR/unload");
 
 if (plat_is_arc() or plat_is_juno()) {
+    system("modprobe -q phy-generic");
     cmd("modprobe xhci_plat_hcd");
     cmd("modprobe dwc3");
 } elsif (plat_is_x86()) {
