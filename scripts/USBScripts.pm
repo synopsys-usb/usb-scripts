@@ -252,6 +252,56 @@ sub wreg {
     return 1;
 }
 
+sub initram {
+    my $size;
+
+    cmd("cat /sys/class/block/ram0/size", \$size)
+        or die "Could not determine size of /dev/ram0";
+
+    cmd("dd if=/dev/zero of=/dev/ram0 count=256 bs=64k 2> /dev/null") or die;
+
+    $size *= 512;
+
+    if ($size == 1024*1024*64) {
+        cmd("$BIN_DIR/initram_64mb") or die;
+    } elsif ($size == 1024*1024*1024*2) {
+        cmd("$BIN_DIR/initram_2gb") or die;
+    } else {
+        die "/dev/ram0 size $size not supported";
+    }
+}
+
+sub unload {
+    if ($TYPE eq "dwc3-xhci") {
+        if (plat_is_arc() or plat_is_juno()) {
+            rmmod("xhci_plat_hcd");
+            rmmod("dwc3");
+            rmmod("phy_generic");
+        } elsif (plat_is_x86()) {
+            rmmod("xhci_pci");
+            rmmod("xhci_hcd");
+        }
+    } elsif (($TYPE eq "dwc3") or ($TYPE eq "dwc2")) {
+        rmmod("g_mass_storage", "g_audio", "g_zero", "tcm_usb_gadget", "g_uas");
+        rmmod("usb_f_mass_storage", "usb_f_uac1", "usb_f_uas");
+        rmmod("usb_f_tcm", "iscsi_target_mod", "tcm_loop", "target_core_mod");
+        rmmod("dwc3_pci", "dwc3");
+        rmmod("dwc2_pci", "dwc2");
+        rmmod("phy_generic");
+        rmmod("usb_f_mass_storage", "libcomposite", "udc_core");
+    }
+}
+
+sub enable_trace {
+    if ($TYPE eq "dwc3") {
+        write_file("/sys/kernel/debug/tracing/buffer_size_kb", "4096") or die;
+        write_file("/sys/kernel/debug/tracing/events/dwc3/enable", "1") or die;
+    } elsif ($TYPE eq "dwc3-xhci") {
+        write_file("/sys/kernel/debug/tracing/buffer_size_kb", "4096") or die;
+        write_file("/sys/kernel/debug/tracing/events/xhci-hcd/enable", "1") or die;
+    }
+}
+
 sub run_as_root {
     if ($ENV{USER} ne 'root') {
         exec("/usr/bin/sudo $0 @ARGV");
@@ -386,6 +436,7 @@ sub no_options {
 our @EXPORT = qw($BIN_DIR $SCRIPT_DIR $SCRIPT $TYPE rreg
 wreg run_as_root plat_is_x86 plat_is_arc plat_is_juno dwc3_debugfs
 dwc2_debugfs rmmod validate_hex parse_bitfield genmask description
-no_options read_file write_file cmd autodie base);
+no_options read_file write_file cmd autodie base initram unload
+enable_trace);
 
 1;

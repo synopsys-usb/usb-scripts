@@ -2,15 +2,8 @@
 
 use strict;
 
-description("Unload the dwc3 xhci driver");
+description("Unload the $TYPE driver");
 no_options();
 run_as_root();
 
-if (plat_is_arc() or plat_is_juno()) {
-    rmmod("xhci_plat_hcd");
-    rmmod("dwc3");
-    rmmod("phy_generic");
-} elsif (plat_is_x86()) {
-    rmmod("xhci_pci");
-    rmmod("xhci_hcd");
-}
+unload();

@@ -6,5 +6,4 @@ description("Enable xhci_hcd driver trace");
 no_options();
 run_as_root();
 
-write_file("/sys/kernel/debug/tracing/buffer_size_kb", "4096") or die;
-write_file("/sys/kernel/debug/tracing/events/xhci-hcd/enable", "1") or die;
+enable_trace();

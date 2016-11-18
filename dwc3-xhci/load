@@ -6,7 +6,7 @@ description("Load the dwc3 xhci driver");
 no_options();
 run_as_root();
 
-cmd("$SCRIPT_DIR/unload");
+unload();
 
 if (plat_is_arc() or plat_is_juno()) {
     system("modprobe -q phy-generic");
@@ -17,4 +17,4 @@ if (plat_is_arc() or plat_is_juno()) {
     cmd("modprobe xhci_hcd");
 }
 
-cmd("$SCRIPT_DIR/enable_trace");
+enable_trace();
