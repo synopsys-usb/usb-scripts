@@ -45,7 +45,7 @@ sub main {
 
     rmmod("netconsole");
     write_file("/proc/sys/kernel/printk", "7 7 7 7");
-    system("dmesg -n 7") == 0 or die;
+    system("dmesg -n 8") == 0 or die;
 
     system("modprobe netconsole netconsole=\@/$eth,6666\@$ip/") == 0 or die;
 }
