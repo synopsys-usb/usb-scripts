@@ -1,7 +1,7 @@
 CC		:= $(CROSS_COMPILE)gcc
 CFLAGS		:= -Os
 OUT_DIR		:= .out
-BINARIES	:= initram_2gb initram_64mb rdmem wrmem
+BINARIES	:= initram_4gb initram_2gb initram_64mb rdmem wrmem
 BINARIES	:= $(addprefix $(OUT_DIR)/, $(BINARIES))
 _MKDIR		:= $(shell mkdir -p $(OUT_DIR))
 

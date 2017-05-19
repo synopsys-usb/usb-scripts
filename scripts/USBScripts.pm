@@ -266,6 +266,8 @@ sub initram {
         cmd("$BIN_DIR/initram_64mb") or die;
     } elsif ($size == 1024*1024*1024*2) {
         cmd("$BIN_DIR/initram_2gb") or die;
+    } elsif ($size == 1024*1024*1024*4) {
+        cmd("$BIN_DIR/initram_4gb") or die;
     } else {
         die "/dev/ram0 size $size not supported";
     }
