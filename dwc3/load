@@ -3,18 +3,40 @@
 use strict;
 
 description("Load the dwc3 module");
-no_options();
 run_as_root();
 autodie();
 
-unload();
-initram();
+sub main {
+    my $arg = shift @ARGV;
 
-if (plat_is_x86()) {
-    cmd("modprobe dwc3_pci");
+    unload();
+    initram();
+
+    if (plat_is_x86()) {
+        cmd("modprobe dwc3_pci");
+    }
+
+    system("modprobe -q phy-generic");
+    cmd("modprobe dwc3");
+    enable_trace();
+
+    if (defined $arg) {
+        if ($arg eq 'audio') {
+            if (cmd("modinfo usb_f_uac2 > /dev/null")) {
+                cmd("modprobe u_audio");
+            }
+            cmd("modprobe snd_usb_audio");
+            if (cmd("modinfo usb_f_uac2 > /dev/null")) {
+                cmd("modprobe g_audio c_srate=48000");
+            } else {
+                cmd("modprobe g_audio fn_play=/dev/snd/pcmC0D0p fn_cap=/dev/snd/pcmC0D0c fn_cntl=/dev/snd/controlC0");
+            }
+        } elsif ($arg eq 'ether') {
+            cmd("modprobe g_ether");
+        }
+    } else {
+        cmd("modprobe g_mass_storage file=/dev/ram0 idVendor=1343 idProduct=35800 iSerialNumber=000020160529 removable=0");
+    }
 }
 
-system("modprobe -q phy-generic");
-cmd("modprobe dwc3");
-enable_trace();
-cmd("modprobe g_mass_storage file=/dev/ram0 idVendor=1343 idProduct=35800 iSerialNumber=000020160529 removable=0");
+main();
