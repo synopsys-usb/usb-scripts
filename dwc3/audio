@@ -1,0 +1,50 @@
+#!/usr/bin/perl
+
+use strict;
+
+description("Play/record stream audio data to/from host");
+run_as_root();
+autodie();
+
+sub usage {
+    my $exit_code = shift;
+
+    print <<EOF;
+usage: $SCRIPT <play|record>
+
+Play/record stream audio data to/from host.
+Note: this script is for UAC2 driver only.
+
+Options:
+    play    Takes stream audio from UAC2
+            interface and play to default
+            audio OUT
+
+    record  Takes default audio IN and
+            record to UAC2 interface
+EOF
+
+    exit $exit_code;
+}
+
+sub main {
+    my $arg = shift @ARGV;
+
+    usage(0) unless defined $arg;
+
+    if (!cmd("modinfo usb_f_uac2 > /dev/null")) {
+        print "No UAC2 module found\n";
+        exit(0);
+    }
+
+    if ($arg eq 'play') {
+        cmd("arecord -f dat -t wav -D hw:CARD=UAC2Gadget,DEV=0 | aplay -D default");
+    } elsif ($arg eq 'record') {
+        cmd("arecord -f dat -t wav -D default | aplay -D hw:CARD=UAC2Gadget,DEV=0");
+    } else {
+        usage(0);
+        exit(0);
+    }
+}
+
+main();

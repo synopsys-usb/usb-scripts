@@ -1,5 +1,5 @@
 INSTALL_DIR := $(INSTALL_DIR)/dwc3_commands
-SCRIPTS := load info
+SCRIPTS := load info audio
 
 install:
 	@$(INSTALL) 0755 $(INSTALL_DIR) $(SCRIPTS)
