@@ -1,5 +1,5 @@
 SH_SCRIPTS := lssnps
-PERL_SCRIPTS := initram netconsole rreg wreg
+PERL_SCRIPTS := initram netconsole rreg wreg decode_stacktrace
 LIB_SCRIPTS := dwc.pl id trace enable_trace regdump unload
 PERL_MODULES := USBScripts.pm
 OTHER := completions.sh

@@ -1,0 +1,31 @@
+#!/usr/bin/perl
+
+use strict;
+
+description("Decode stacktrace");
+
+sub usage {
+    my $exit_code = shift;
+
+    print <<EOF;
+usage: $SCRIPT <input log>
+
+Read the stacktrace input log and
+decode for filename and code line
+
+EOF
+
+    exit $exit_code;
+}
+
+sub main {
+    my $input_log = shift @ARGV;
+
+    usage(0) unless defined $input_log;
+
+    cmd("$ENV{KDIR}/scripts/decode_stacktrace.sh $ENV{KDIR}/build/vmlinux $ENV{KDIR}/build < $input_log");
+
+    exit(0);
+}
+
+main();
