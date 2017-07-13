@@ -1,9 +1,0 @@
-#!/usr/bin/perl
-
-use strict;
-
-description("Print xhci driver trace");
-no_options();
-run_as_root();
-
-system("cat /sys/kernel/debug/tracing/trace") == 0 or die;

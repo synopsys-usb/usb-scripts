@@ -2,7 +2,7 @@
 
 use strict;
 
-description("Print dwc3 driver trace");
+description("Print driver trace");
 no_options();
 run_as_root();
 

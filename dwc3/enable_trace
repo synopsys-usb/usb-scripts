@@ -1,9 +1,0 @@
-#!/usr/bin/perl
-
-use strict;
-
-description("Enable dwc3 driver trace");
-no_options();
-run_as_root();
-
-enable_trace();

@@ -7,5 +7,6 @@ install:
 	@ln -fs ../rreg $(INSTALL_DIR)/rreg
 	@ln -fs ../wreg $(INSTALL_DIR)/wreg
 	@ln -fs ../dwc3_commands/unload $(INSTALL_DIR)/unload
-
+	@ln -fs ../trace $(INSTALL_DIR)/trace
+	@ln -fs ../enable_trace $(INSTALL_DIR)/enable_trace
 .PHONY: install

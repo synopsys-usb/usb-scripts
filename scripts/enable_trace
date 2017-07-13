@@ -2,7 +2,7 @@
 
 use strict;
 
-description("Enable xhci_hcd driver trace");
+description("Enable driver trace");
 no_options();
 run_as_root();
 
