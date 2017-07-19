@@ -18,7 +18,7 @@ sub print_usage {
         }
 
         if ($contents =~ m/description\(\"(.*)\"\)/) {
-            $out = $1;
+            $out = eval qq{"$1"};
         }
 
         $commands .= sprintf("  %-15s $out\n", $_);

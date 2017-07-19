@@ -2,7 +2,7 @@
 
 use strict;
 
-description("Enable driver trace");
+description("Enable $SCRIPT driver trace");
 no_options();
 run_as_root();
 
