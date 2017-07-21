@@ -83,7 +83,7 @@ sub main {
         die "Invalid $SCRIPT command $ARGV[0]\n";
     }
 
-    exec("/usr/bin/perl $COMMAND_DIR/@ARGV");
+    exec("/usr/bin/perl $COMMAND_DIR/@ARGV type=$SCRIPT");
 }
 
 main();

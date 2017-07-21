@@ -2,6 +2,8 @@
 
 use strict;
 
+dwc_script();
+
 description("Enable $SCRIPT driver trace");
 no_options();
 run_as_root();

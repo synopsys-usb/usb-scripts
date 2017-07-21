@@ -9,6 +9,7 @@ our $BIN_DIR;
 our $SCRIPT_DIR;
 our $SCRIPT;
 our $TYPE;
+my $DWC_SCRIPT = 0;
 
 sub initialize {
     if ($0 =~ m/^(.*)\/(.*?)$/) {
@@ -23,6 +24,7 @@ sub initialize {
 
     if ($SCRIPT_DIR =~ m/(dwc2|dwc3|dwc3\-xhci)_commands/) {
         $TYPE = $1;
+        $DWC_SCRIPT = 1;
     }
 }
 
@@ -435,13 +437,31 @@ sub write_file {
 # The script should not take any options or parameters and it should
 # die if any are specified.
 sub no_options {
-    die "$SCRIPT: invalid parameters\n" if (@ARGV);
+    if ($DWC_SCRIPT) {
+        if (($#ARGV == -1) or !($ARGV[-1] =~ m/type=/)) {
+            die "$SCRIPT: invalid parameters\n";
+        }
+    } elsif ($#ARGV > -1) {
+        die "$SCRIPT: invalid parameters\n";
+    }
+}
+
+# Set driver type for shared script across different dwc drivers.
+# Must set this first before other options (e.g. before no_options).
+sub dwc_script {
+    $DWC_SCRIPT = 1;
+
+    die "$SCRIPT: must specify driver prefix\n" if $#ARGV < 0;
+
+    if ($ARGV[-1] =~ m/type=(dwc2|dwc3|dwc3\-xhci)/) {
+        $TYPE = $ARGV[-1];
+    }
 }
 
 our @EXPORT = qw($BIN_DIR $SCRIPT_DIR $SCRIPT $TYPE rreg
 wreg run_as_root plat_is_x86 plat_is_arc plat_is_juno dwc3_debugfs
 dwc2_debugfs rmmod validate_hex parse_bitfield genmask description
 no_options read_file write_file cmd autodie base initram unload
-enable_trace);
+enable_trace dwc_script);
 
 1;
