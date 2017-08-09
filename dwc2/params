@@ -1,0 +1,11 @@
+#!/usr/bin/perl
+
+use strict;
+
+description("Print dwc2 driver parameters");
+no_options();
+run_as_root();
+
+my $debug = dwc2_debugfs() or die "No debugfs";
+
+cmd("cat $debug/params") or die;

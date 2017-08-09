@@ -1,5 +1,5 @@
 INSTALL_DIR := $(INSTALL_DIR)/dwc2_commands
-SCRIPTS := load
+SCRIPTS := load params
 
 install:
 	@$(INSTALL) 0755 $(INSTALL_DIR) $(SCRIPTS)
