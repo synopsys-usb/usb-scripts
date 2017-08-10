@@ -340,6 +340,10 @@ sub dwc2_debugfs {
     return debugfs("dwc2");
 }
 
+sub dwc2_pci_debugfs {
+    return debugfs("dwc2-pci");
+}
+
 sub validate_hex {
     my $str = shift;
     if ($str =~ m/^(0x|)([0-9a-fA-F])+$/) {
@@ -460,7 +464,7 @@ sub dwc_script {
 
 our @EXPORT = qw($BIN_DIR $SCRIPT_DIR $SCRIPT $TYPE rreg
 wreg run_as_root plat_is_x86 plat_is_arc plat_is_juno dwc3_debugfs
-dwc2_debugfs rmmod validate_hex parse_bitfield genmask description
+dwc2_debugfs dwc2_pci_debugfs rmmod validate_hex parse_bitfield genmask description
 no_options read_file write_file cmd autodie base initram unload
 enable_trace dwc_script);
 

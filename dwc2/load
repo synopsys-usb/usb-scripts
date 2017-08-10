@@ -16,3 +16,15 @@ if (plat_is_x86()) {
 
 cmd("modprobe dwc2");
 cmd("modprobe g_mass_storage file=/dev/ram0 iSerialNumber=012345678901");
+
+my $debug = dwc2_pci_debugfs();
+if ($debug) {
+    pop @ARGV;
+    for (@ARGV) {
+        my ($file, $value) = /^(.+)=(.+)/;
+        system("(echo $value >  $debug/$file) 2>/dev/null") == 0
+          or die("Incorrect param $file or value $value");
+    }
+
+    cmd("echo 1 > $debug/start");
+}
