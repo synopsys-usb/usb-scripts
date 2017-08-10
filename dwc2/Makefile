@@ -9,4 +9,6 @@ install:
 	@ln -fs ../dwc3_commands/unload $(INSTALL_DIR)/unload
 	@ln -fs ../trace $(INSTALL_DIR)/trace
 	@ln -fs ../enable_trace $(INSTALL_DIR)/enable_trace
+	@ln -fs ../regdump $(INSTALL_DIR)/regdump
+
 .PHONY: install

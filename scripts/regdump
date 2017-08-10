@@ -1,0 +1,19 @@
+#!/usr/bin/perl
+
+use strict;
+
+dwc_script();
+description("Print all $SCRIPT registers");
+no_options();
+run_as_root();
+
+my $debug = "";
+if ($TYPE eq "dwc2") {
+    $debug = dwc2_debugfs() or die("No debugfs for dwc2");
+} elsif ($TYPE eq "dwc3" or $TYPE eq "dwc3-xhci") {
+    $debug = dwc3_debugfs() or die("No debugfs for $TYPE");
+} else {
+    die("regdump is unsupported for $TYPE");
+}
+
+cmd("cat $debug/regdump") or die;

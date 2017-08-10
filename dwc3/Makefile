@@ -1,5 +1,5 @@
 INSTALL_DIR := $(INSTALL_DIR)/dwc3_commands
-SCRIPTS := load unload regdump info
+SCRIPTS := load unload info
 
 install:
 	@$(INSTALL) 0755 $(INSTALL_DIR) $(SCRIPTS)
@@ -8,5 +8,6 @@ install:
 	@ln -fs ../wreg $(INSTALL_DIR)/wreg
 	@ln -fs ../trace $(INSTALL_DIR)/trace
 	@ln -fs ../enable_trace $(INSTALL_DIR)/enable_trace
+	@ln -fs ../regdump $(INSTALL_DIR)/regdump
 
 .PHONY: install
