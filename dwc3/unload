@@ -1,9 +1,0 @@
-#!/usr/bin/perl
-
-use strict;
-
-description("Unload the dwc3/2 module");
-no_options();
-run_as_root();
-
-unload();
