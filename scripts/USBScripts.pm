@@ -6,6 +6,7 @@ use parent 'Exporter';
 use Cwd qw(fast_abs_path);
 
 our $BIN_DIR;
+our $LIB_DIR;
 our $SCRIPT_DIR;
 our $SCRIPT;
 our $TYPE;
@@ -20,6 +21,7 @@ sub initialize {
     my $file = __FILE__;
     if ($file =~ m/^(.*)\/(.*?)$/) {
         $BIN_DIR = fast_abs_path($1);
+        $LIB_DIR = "$BIN_DIR/lib";
     }
 
     if ($SCRIPT_DIR =~ m/(dwc2|dwc3|dwc3\-xhci)_commands/) {
@@ -230,7 +232,7 @@ sub rreg {
 	$address += base();
     }
 
-    my $cmd = sprintf("$BIN_DIR/rdmem %x", $address);
+    my $cmd = sprintf("$LIB_DIR/rdmem %x", $address);
 
     my $value;
     _cmd($cmd, \$value) or die "rreg failed\n";
@@ -248,7 +250,7 @@ sub wreg {
 	$address += base();
     }
 
-    my $cmd = sprintf("$BIN_DIR/wrmem %x %x", $address, $value);
+    my $cmd = sprintf("$LIB_DIR/wrmem %x %x", $address, $value);
 
     _cmd($cmd) or die "wreg failed\n";
     return 1;
@@ -265,11 +267,11 @@ sub initram {
     $size *= 512;
 
     if ($size == 1024*1024*64) {
-        cmd("$BIN_DIR/initram_64mb") or die;
+        cmd("$LIB_DIR/initram_64mb") or die;
     } elsif ($size == 1024*1024*1024*2) {
-        cmd("$BIN_DIR/initram_2gb") or die;
+        cmd("$LIB_DIR/initram_2gb") or die;
     } elsif ($size == 1024*1024*1024*4) {
-        cmd("$BIN_DIR/initram_4gb") or die;
+        cmd("$LIB_DIR/initram_4gb") or die;
     } else {
         die "/dev/ram0 size $size not supported";
     }
@@ -462,7 +464,7 @@ sub dwc_script {
     }
 }
 
-our @EXPORT = qw($BIN_DIR $SCRIPT_DIR $SCRIPT $TYPE rreg
+our @EXPORT = qw($BIN_DIR $LIB_DIR $SCRIPT_DIR $SCRIPT $TYPE rreg
 wreg run_as_root plat_is_x86 plat_is_arc plat_is_juno dwc3_debugfs
 dwc2_debugfs dwc2_pci_debugfs rmmod validate_hex parse_bitfield genmask description
 no_options read_file write_file cmd autodie base initram unload
