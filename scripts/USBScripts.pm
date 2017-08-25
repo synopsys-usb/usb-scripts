@@ -458,7 +458,7 @@ sub dwc_script {
     die "$SCRIPT: must specify driver prefix\n" if $#ARGV < 0;
 
     if ($ARGV[-1] =~ m/type=(dwc2|dwc3|dwc3\-xhci)/) {
-        $TYPE = $ARGV[-1];
+        $TYPE = $1;
     }
 }
 
