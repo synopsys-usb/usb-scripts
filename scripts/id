@@ -2,8 +2,6 @@
 
 use strict;
 
-dwc_script();
-
 description("Print controller id");
 run_as_root();
 no_options();

@@ -2,7 +2,6 @@
 
 use strict;
 
-dwc_script();
 description("Print all $SCRIPT registers");
 no_options();
 run_as_root();

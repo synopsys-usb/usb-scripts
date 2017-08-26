@@ -2,8 +2,6 @@
 
 use strict;
 
-dwc_script();
-
 description("Unload $SCRIPT modules");
 no_options();
 run_as_root();

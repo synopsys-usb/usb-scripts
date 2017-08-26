@@ -19,7 +19,6 @@ cmd("modprobe g_mass_storage file=/dev/ram0 iSerialNumber=012345678901");
 
 my $debug = dwc2_pci_debugfs();
 if ($debug) {
-    pop @ARGV;
     for (@ARGV) {
         my ($file, $value) = /^(.+)=(.+)/;
         system("(echo $value >  $debug/$file) 2>/dev/null") == 0
