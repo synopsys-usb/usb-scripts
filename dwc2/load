@@ -3,7 +3,6 @@
 use strict;
 
 description("Load the dwc2 module");
-no_options();
 run_as_root();
 autodie();
 
