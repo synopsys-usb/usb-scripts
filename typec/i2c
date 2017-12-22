@@ -1,0 +1,62 @@
+#!/usr/bin/perl
+
+use strict;
+
+description("Read TCA/TCPC regs");
+run_as_root();
+autodie();
+
+#my $PCI_SYSFS='/sys/devices/pci0000:00/0000:00:01.0/0000:01:00.2';
+my $TC_DEBUGFS='/sys/kernel/debug/combo_phy';
+my $TCPC='1';
+my $TCA='0';
+
+sub i2c_read {
+    my $arg = shift;
+    my $reg = shift;
+
+    chomp $reg;
+
+    if ($arg eq 'tcpc') {
+        cmd("echo -n ${TCPC}r$reg > $TC_DEBUGFS/i2c");
+        cmd("cat $TC_DEBUGFS/i2c");
+    } elsif ($arg eq 'tca') {
+        cmd("echo -n ${TCA}r$reg > $TC_DEBUGFS/i2c");
+        cmd("cat $TC_DEBUGFS/i2c");
+    } else {
+        print "typec i2c <tca|tcpc> <reg>\n";
+    }
+}
+
+sub i2c_write {
+    my $arg = shift;
+    my $value = shift;
+    my $reg = shift;
+
+    chomp $reg;
+    chomp $value;
+
+    if ($arg eq 'tcpc') {
+        cmd("echo -n \"${TCPC}w$reg $value\" > $TC_DEBUGFS/i2c");
+        cmd("cat $TC_DEBUGFS/i2c");
+    } elsif ($arg eq 'tca') {
+        cmd("echo -n \"${TCA}w$reg $value\" > $TC_DEBUGFS/i2c");
+        cmd("cat $TC_DEBUGFS/i2c");
+    } else {
+        print "typec i2c <tca|tcpc> <value> <reg>\n";
+    }
+}
+
+sub main {
+    my $num_arg = $#ARGV + 1;
+
+    if ($num_arg == 2) {
+        i2c_read(@ARGV);
+    } elsif ($num_arg == 3) {
+        i2c_write(@ARGV);
+    } else {
+        print "Wrong number of args\n";
+    }
+}
+
+main();

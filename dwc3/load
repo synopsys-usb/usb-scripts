@@ -31,12 +31,16 @@ sub main {
             } else {
                 cmd("modprobe g_audio fn_play=/dev/snd/pcmC0D0p fn_cap=/dev/snd/pcmC0D0c fn_cntl=/dev/snd/controlC0");
             }
+            return;
         } elsif ($arg eq 'ether') {
             cmd("modprobe g_ether");
+            return;
+        } elsif ($arg eq 'typec') {
+            cmd("modprobe snps-phy-tc");
         }
-    } else {
-        cmd("modprobe g_mass_storage file=/dev/ram0 idVendor=1343 idProduct=35800 iSerialNumber=000020160529 removable=0");
     }
+
+    cmd("modprobe g_mass_storage file=/dev/ram0 idVendor=1343 idProduct=35800 iSerialNumber=000020160529 removable=0");
 }
 
 main();

@@ -1,0 +1,17 @@
+#!/usr/bin/perl
+
+use strict;
+
+description("Load the Type-C module");
+run_as_root();
+autodie();
+
+sub main {
+    my $arg = shift @ARGV;
+
+    unload();
+
+    cmd("modprobe snps-phy-tc");
+}
+
+main();

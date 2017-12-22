@@ -1,0 +1,11 @@
+#!/usr/bin/perl
+
+use strict;
+
+description("Dump the Type-C regs");
+run_as_root();
+autodie();
+
+my $TC_DEBUGFS='/sys/kernel/debug/combo_phy';
+
+cmd("cat $TC_DEBUGFS/regdump");

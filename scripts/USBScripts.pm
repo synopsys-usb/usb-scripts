@@ -25,7 +25,7 @@ sub initialize {
     }
 
     if (@ARGV) {
-        if ($ARGV[-1] =~ m/type=(dwc2$|dwc3$|dwc3\-xhci$)/) {
+        if ($ARGV[-1] =~ m/type=(typec$|dwc2$|dwc3$|dwc3\-xhci$)/) {
             $TYPE = $1;
             $DWC_SCRIPT = 1;
             pop @ARGV;
@@ -166,10 +166,12 @@ my $_BASE;
 
 my $PCI_PIDS = {
     "abc0" => "dwc2",
+    "abc3" => "typec",
     "abce" => "dwc3",
     "abcf" => "dwc3",
     "abcd" => "dwc3",
     "1234" => "dwc3-xhci",
+    "9001" => "DP",
 };
 
 #
@@ -202,7 +204,7 @@ sub base {
 
         my $id = $ids[0];
         for (@ids) {
-            if (defined ($TYPE) && ($TYPE eq $PCI_PIDS->{$_})) {
+            if (defined ($TYPE) && exists $PCI_PIDS->{$_} && ($TYPE eq $PCI_PIDS->{$_})) {
                 $id = $_;
             }
         }
@@ -214,11 +216,17 @@ sub base {
         _cmd("lspci -v -d 16c3:$id", \$pci)
             or die("Couldn't examine PCI bus.\n");
 
-        if ($pci =~ /Memory at ([\da-fA-F]+) .*/) {
+        if (defined ($TYPE) && $TYPE eq "typec") {
+            if ($pci =~ /Memory at ([\da-fA-F]+) \(32.*/) {
+                $_BASE = hex($1);
+            }
+        } elsif ($pci =~ /Memory at ([\da-fA-F]+) .*/) {
             $_BASE = hex($1);
         } else {
             die("Controller for $TYPE not found. Check lspci.\n");
         }
+
+
     } else {
         my $plat = plat();
         die("Unknown platform $plat\n");
@@ -290,12 +298,13 @@ sub unload {
             rmmod("xhci_pci");
             rmmod("xhci_hcd");
         }
-    } elsif (($TYPE eq "dwc3") or ($TYPE eq "dwc2")) {
+    } elsif (($TYPE eq "typec") or ($TYPE eq "dwc3") or ($TYPE eq "dwc2")) {
         rmmod("g_mass_storage", "g_audio", "g_ether", "g_zero", "tcm_usb_gadget", "g_uas");
         rmmod("usb_f_mass_storage", "usb_f_uac1", "usb_f_uac2", "usb_f_uas", "u_audio");
         rmmod("usb_f_tcm", "iscsi_target_mod", "tcm_loop", "target_core_mod");
         rmmod("dwc3_pci", "dwc3");
         rmmod("dwc2_pci", "dwc2");
+        rmmod("snps_phy_tc");
         rmmod("phy_generic");
         rmmod("usb_f_mass_storage", "libcomposite", "udc_core");
     }

@@ -68,7 +68,7 @@ sub do_completion {
 sub main {
     $COMMAND_DIR = "$SCRIPT_DIR/${SCRIPT}_commands";
     if (!-d $COMMAND_DIR) {
-        die "Please use dwc3, dwc2, or dwc3-xhci\n";
+        die "Please use dwc3, dwc2, typec, or dwc3-xhci\n";
     }
 
     print_usage(0) if !@ARGV;

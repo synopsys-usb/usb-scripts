@@ -42,6 +42,7 @@ version: VERSION
 install: build uninstall VERSION
 	@$(MAKE) -s -C src install
 	@$(MAKE) -s -C scripts install
+	@$(MAKE) -s -C typec install
 	@$(MAKE) -s -C dwc3 install
 	@$(MAKE) -s -C dwc3-xhci install
 	@$(MAKE) -s -C dwc2 install
