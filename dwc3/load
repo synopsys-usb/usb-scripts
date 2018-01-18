@@ -17,4 +17,4 @@ if (plat_is_x86()) {
 system("modprobe -q phy-generic");
 cmd("modprobe dwc3");
 enable_trace();
-cmd("modprobe g_mass_storage file=/dev/ram0 iSerialNumber=000020160529 removable=0");
+cmd("modprobe g_mass_storage file=/dev/ram0 idVendor=1343 idProduct=35800 iSerialNumber=000020160529 removable=0");
