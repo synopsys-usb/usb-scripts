@@ -4,88 +4,193 @@ use strict;
 
 description("Print information about the controller");
 run_as_root();
-no_options();
 
-# Check if PCIe device is in PCI bus
-base();
+sub usage {
+    my $exit_code = shift;
 
-# Check if device ID is correct
-my $snpsid = rreg(0xc120) >> 16;
-if (($snpsid != 0x5533) && ($snpsid != 0x3331)) {
-    die sprintf("Error: Wrong device ID %04x\n", $snpsid);
+    print <<USAGE_EOF;
+usage: $SCRIPT [eps] | [ep_name [trb_ring]]
+
+Show current controller status and its
+endpoints debug info.
+
+Options:
+  <NONE>     - print current controller status
+  eps        - list all controller's endpoint info
+  ep_name    - endpoint name e.g. ep1in, ep2out
+  trb_ring   - print endpoint TRB ring of an endpoint
+
+USAGE_EOF
+
+    exit $exit_code;
 }
 
-# Check if driver is loaded
-print "\n";
-my $tmp;
+sub print_status {
+    my $snpsid = shift;
+    my $GDBGLTSSM;
 
-cmd("lsmod", \$tmp) or die;
-if ($tmp =~ /dwc3/ and $tmp =~ /g_mass_storage/) {
-    print "Driver is loaded\n";
-} else {
-    print "Driver is NOT loaded\n";
+    if ($snpsid == 0x3331) {
+        $GDBGLTSSM = rreg(0xd050);
+    } else {
+        $GDBGLTSSM = rreg(0xc164);
+    }
+
+    my $num = $GDBGLTSSM;
+    $num = $num & 0x03C00000;
+    $num = ($num >> 22) ;
+
+    my $state;
+    if ($num == 0) { $state = "U0"; }
+    elsif ($num == 1) { $state = "U1"; }
+    elsif ($num == 2) { $state = "U2"; }
+    elsif ($num == 3) { $state = "U3"; }
+    elsif ($num == 4) { $state = "SS_disable"; }
+    elsif ($num == 5) { $state = "Rx_Detect "; }
+    elsif ($num == 6) { $state = "SS_Inactive"; }
+    elsif ($num == 7) { $state = "Poll"; }
+    elsif ($num == 8) { $state = "Recov"; }
+    elsif ($num == 9) { $state = "HReset"; }
+    elsif ($num == 10) { $state = "Compliance"; }
+    elsif ($num == 11) { $state = "Loopback"; }
+    else { $state = "Unknown"; }
+    printf "LinkState = $state (0x%02x)\n", $num;
+
+    $num = $GDBGLTSSM & 0x3C0000;
+    $num = $num >> 18;
+    printf("Sub LinkState = %x\n", $num);
+
+    # Find device speed
+    my $DSTS = rreg(0xc70c);
+    $num = $DSTS & 7;
+
+    my $speed;
+    if ($num == 4) { $speed = "Super speed gen1"; }
+    elsif ($num == 5) { $speed = "Super speed gen2"; }
+    elsif ($num == 0) { $speed = "High speed"; }
+    elsif ($num == 1) { $speed = "Full speed"; }
+    elsif ($num == 2) { $speed = "Low speed"; }
+    elsif ($num == 3) { $speed = "Full speed"; }
+    else { $speed = "Unknown"; }
+    print "Speed: $speed\n";
+
+    #Find MPHY state
+    my $GUSB3RMMICTL = rreg(0xc1c0);
+    print "GUSB3RMMICTL = $GUSB3RMMICTL\n";
+    $num = ($GUSB3RMMICTL & 0x0E000000) >> 25;
+
+    my $mphy_state;
+
+    if ($num == 0) { $mphy_state = "disable"; }
+    elsif ($num == 1) { $mphy_state = "hibern8"; }
+    elsif ($num == 2) { $mphy_state = "sleep  "; }
+    elsif ($num == 3) { $mphy_state = "STALL"; }
+    elsif ($num == 4) { $mphy_state = "PWM_burst"; }
+    elsif ($num == 5) { $mphy_state = "HS-BURST"; }
+    elsif ($num == 6) { $mphy_state = "line_cfg"; }
+    elsif ($num == 7) { $mphy_state = "line_reset"; }
+    else { $mphy_state = "Unknown"; }
+    printf "MPHY State = $mphy_state (0x%02x)\n", $num;
+    print "\n";
 }
 
-my $GDBGLTSSM;
-if ($snpsid == 0x3331) {
-    $GDBGLTSSM = rreg(0xd050);
-} else {
-    $GDBGLTSSM = rreg(0xc164);
+sub print_ep {
+    my $debugfs = shift;
+    my $ep = shift;
+
+    my $desc_fetch_q;
+    my $event_q;
+    my $rx_info_q;
+    my $tx_info_q;
+    my $rx_fifo_q;
+    my $tx_fifo_q;
+
+    cmd("cat $debugfs/$ep/descriptor_fetch_queue", \$desc_fetch_q);
+    cmd("cat $debugfs/$ep/event_queue", \$event_q);
+    cmd("cat $debugfs/$ep/rx_fifo_queue", \$rx_fifo_q);
+    cmd("cat $debugfs/$ep/tx_fifo_queue", \$tx_fifo_q);
+    cmd("cat $debugfs/$ep/rx_info_queue", \$rx_info_q);
+    #cmd("cat $debugfs/$ep/tx_info_queue", \$tx_info_q);
+
+    chomp $event_q;
+    chomp $event_q;
+    chomp $rx_fifo_q;
+    chomp $tx_fifo_q;
+    chomp $rx_info_q;
+    chomp $tx_info_q;
+
+    print <<EP_INFO;
+## $ep
+desc_fetch_queue = $event_q
+event_queue      = $event_q
+rx_fifo_queue    = $rx_fifo_q
+tx_fifo_queue    = $tx_fifo_q
+rx_info_queue    = $rx_info_q
+=============================
+EP_INFO
 }
 
-my $num = $GDBGLTSSM;
-$num = $num & 0x03C00000;
-$num = ($num >> 22) ;
+sub main {
+    # Check if PCIe device is in PCI bus
+    base();
 
-my $state;
-if ($num == 0) { $state = "U0"; }
-elsif ($num == 1) { $state = "U1"; }
-elsif ($num == 2) { $state = "U2"; }
-elsif ($num == 3) { $state = "U3"; }
-elsif ($num == 4) { $state = "SS_disable"; }
-elsif ($num == 5) { $state = "Rx_Detect "; }
-elsif ($num == 6) { $state = "SS_Inactive"; }
-elsif ($num == 7) { $state = "Poll"; }
-elsif ($num == 8) { $state = "Recov"; }
-elsif ($num == 9) { $state = "HReset"; }
-elsif ($num == 10) { $state = "Compliance"; }
-elsif ($num == 11) { $state = "Loopback"; }
-else { $state = "Unknown"; }
-printf "LinkState = $state (0x%02x)\n", $num;
+    # Check if device ID is correct
+    my $snpsid = rreg(0xc120) >> 16;
+    if (($snpsid != 0x5533) && ($snpsid != 0x3331)) {
+        die sprintf("Error: Wrong device ID %04x\n", $snpsid);
+    }
 
-$num = $GDBGLTSSM & 0x3C0000;
-$num = $num >> 18;
-printf("Sub LinkState = %x\n", $num);
+    if (!@ARGV) {
+        # Check if driver is loaded
+        print "\n";
+        my $tmp;
 
-# Find device speed
-my $DSTS = rreg(0xc70c);
-$num = $DSTS & 7;
+        cmd("lsmod", \$tmp) or die;
+        if ($tmp =~ /dwc3\b/) {
+            print "Driver is loaded\n";
+        } else {
+            print "Driver is NOT loaded\n";
+        }
 
-my $speed;
-if ($num == 4) { $speed = "Super speed gen1"; }
-elsif ($num == 5) { $speed = "Super speed gen2"; }
-elsif ($num == 0) { $speed = "High speed"; }
-elsif ($num == 1) { $speed = "Full speed"; }
-elsif ($num == 2) { $speed = "Low speed"; }
-elsif ($num == 3) { $speed = "Full speed"; }
-else { $speed = "Unknown"; }
-print "Speed: $speed\n";
+        print_status($snpsid);
+        exit(0);
+    } else {
+        my $debugfs;
 
-#Find MPHY state
-my $GUSB3RMMICTL = rreg(0xc1c0);
-print "GUSB3RMMICTL = $GUSB3RMMICTL\n";
-$num = ($GUSB3RMMICTL & 0x0E000000) >> 25;
+        if ($TYPE eq "dwc3") {
+            $debugfs = dwc3_debugfs() or die("No debugfs for $TYPE");
+        } else {
+            die("Endpoint debug is unsupported for $TYPE");
+        }
 
-my $mphy_state;
+        if ($ARGV[0] eq "eps") {
+            my @eps;
+            my @files = <"$debugfs/*">;
 
-if ($num == 0) { $mphy_state = "disable"; }
-elsif ($num == 1) { $mphy_state = "hibern8"; }
-elsif ($num == 2) { $mphy_state = "sleep  "; }
-elsif ($num == 3) { $mphy_state = "STALL"; }
-elsif ($num == 4) { $mphy_state = "PWM_burst"; }
-elsif ($num == 5) { $mphy_state = "HS-BURST"; }
-elsif ($num == 6) { $mphy_state = "line_cfg"; }
-elsif ($num == 7) { $mphy_state = "line_reset"; }
-else { $mphy_state = "Unknown"; }
-printf "MPHY State = $mphy_state (0x%02x)\n", $num;
-print "\n";
+            foreach my $file (@files) {
+                my $name;
+
+                if ($file =~ /(ep\d{1,2}(?:in|out))/) {
+                    push @eps, $1;
+                }
+            }
+
+            foreach my $ep (@eps) {
+                print_ep($debugfs, $ep);
+            }
+        } elsif ($ARGV[0] =~ /(ep\d{1,2}(?:in|out))/) {
+            my $ep = shift @ARGV;
+
+            if ($ARGV[0] eq 'trb_ring') {
+                cmd("cat $debugfs/$ep/trb_ring");
+            } else {
+                print_ep($debugfs, $ep);
+            }
+        } else {
+            usage(0);
+        }
+    }
+
+    exit(0);
+}
+
+main();
