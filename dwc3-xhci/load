@@ -3,24 +3,35 @@
 use strict;
 
 description("Load the dwc3 xhci driver");
-no_options();
 run_as_root();
 
-unload();
+sub main {
+    my $arg = shift @ARGV;
 
-if (plat_is_arc() or plat_is_juno()) {
-    system("modprobe -q phy-generic");
-    cmd("modprobe xhci_plat_hcd");
-    cmd("modprobe dwc3");
-} elsif (plat_is_x86()) {
-    if (base()) {
+    unload();
+
+    if (plat_is_arc() or plat_is_juno()) {
+        system("modprobe -q phy-generic");
+        cmd("modprobe xhci_plat_hcd");
         cmd("modprobe dwc3");
-        cmd("modprobe dwc3_pci");
-    } else {
-        cmd("modprobe xhci_pci");
+    } elsif (plat_is_x86()) {
+        if (base()) {
+            cmd("modprobe dwc3");
+            cmd("modprobe dwc3_pci");
+        } else {
+            cmd("modprobe xhci_pci");
+        }
+
+        cmd("modprobe xhci_hcd");
     }
 
-    cmd("modprobe xhci_hcd");
+    if (defined $arg) {
+        if ($arg eq 'typec') {
+            cmd("modprobe snps-phy-tc");
+        }
+    }
+
+    enable_trace();
 }
 
-enable_trace();
+main();

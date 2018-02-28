@@ -166,6 +166,7 @@ my $_BASE;
 
 my $PCI_PIDS = {
     "abc0" => "dwc2",
+    "abc1" => "typec",
     "abc3" => "typec",
     "abce" => "dwc3",
     "abcf" => "dwc3",
@@ -295,6 +296,9 @@ sub unload {
             rmmod("dwc3");
             rmmod("phy_generic");
         } elsif (plat_is_x86()) {
+            rmmod("snps_phy_tc");
+            rmmod("xhci_plat_hcd");
+            rmmod("dwc3_pci", "dwc3");
             rmmod("xhci_pci");
             rmmod("xhci_hcd");
         }
