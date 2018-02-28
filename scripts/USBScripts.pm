@@ -353,6 +353,10 @@ sub debugfs {
     return undef;
 }
 
+sub typec_debugfs {
+    return debugfs("combo_phy");
+}
+
 sub dwc3_debugfs {
     return debugfs("dwc3");
 }
@@ -466,9 +470,9 @@ sub no_options {
 }
 
 our @EXPORT = qw($BIN_DIR $LIB_DIR $SCRIPT_DIR $SCRIPT $TYPE rreg
-wreg run_as_root plat_is_x86 plat_is_arc plat_is_juno dwc3_debugfs
-dwc2_debugfs dwc2_pci_debugfs rmmod validate_hex parse_bitfield
-genmask description no_options read_file write_file cmd autodie base
-initram unload enable_trace);
+wreg run_as_root plat_is_x86 plat_is_arc plat_is_juno typec_debugfs
+dwc3_debugfs dwc2_debugfs dwc2_pci_debugfs rmmod validate_hex
+parse_bitfield genmask description no_options read_file write_file
+cmd autodie base initram unload enable_trace);
 
 1;

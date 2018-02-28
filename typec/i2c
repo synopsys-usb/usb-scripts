@@ -7,7 +7,7 @@ run_as_root();
 autodie();
 
 #my $PCI_SYSFS='/sys/devices/pci0000:00/0000:00:01.0/0000:01:00.2';
-my $TC_DEBUGFS='/sys/kernel/debug/combo_phy';
+my $TC_DEBUGFS = typec_debugfs();
 my $TCPC='1';
 my $TCA='0';
 
