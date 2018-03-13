@@ -227,6 +227,13 @@ sub base {
             die("Controller for $TYPE not found. Check lspci.\n");
         }
 
+        my $pci_cmd;
+        _cmd("setpci -d 16c3:$id COMMAND", \$pci_cmd);
+        chomp $pci_cmd;
+        if (!(($pci_cmd >> 1) & 0x1)) {
+            $pci_cmd |= 2;
+            _cmd("sudo setpci -d 16c3:$id COMMAND=$pci_cmd");
+        }
 
     } else {
         my $plat = plat();
