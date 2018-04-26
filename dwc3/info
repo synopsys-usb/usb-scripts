@@ -61,11 +61,12 @@ sub print_status {
 
     # Find device speed
     my $DSTS = rreg(0xc70c);
+    my $lane = ($DSTS & (1 << 30)) ? "2-lane" : "1-lane";
     $num = $DSTS & 7;
 
     my $speed;
-    if ($num == 4) { $speed = "Super speed gen1"; }
-    elsif ($num == 5) { $speed = "Super speed gen2"; }
+    if ($num == 4) { $speed = "Super speed gen1 $lane"; }
+    elsif ($num == 5) { $speed = "Super speed gen2 $lane"; }
     elsif ($num == 0) { $speed = "High speed"; }
     elsif ($num == 1) { $speed = "Full speed"; }
     elsif ($num == 2) { $speed = "Low speed"; }
