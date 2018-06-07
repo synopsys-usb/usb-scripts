@@ -162,6 +162,19 @@ sub plat_is_juno {
     return 0;
 }
 
+my $_KERNEL_VERSION;
+
+sub kver {
+    if (!defined $_KERNEL_VERSION) {
+        _cmd("uname -r", \$_KERNEL_VERSION)
+            or die("Couldn't determine kernel version\n");
+
+        chomp $_KERNEL_VERSION;
+    }
+
+    return $_KERNEL_VERSION;
+}
+
 my $_BASE;
 
 my $PCI_PIDS = {
@@ -305,7 +318,7 @@ sub unload {
         } elsif (plat_is_x86()) {
             rmmod("snps_phy_tc");
             rmmod("xhci_plat_hcd");
-            rmmod("dwc3_pci", "dwc3");
+            rmmod("dwc3_haps", "dwc3_pci", "dwc3");
             rmmod("xhci_pci");
             rmmod("xhci_hcd");
         }
@@ -313,7 +326,7 @@ sub unload {
         rmmod("g_mass_storage", "g_audio", "g_ether", "g_zero", "tcm_usb_gadget", "g_uas");
         rmmod("usb_f_mass_storage", "usb_f_uac1", "usb_f_uac2", "usb_f_uas", "u_audio");
         rmmod("usb_f_tcm", "iscsi_target_mod", "tcm_loop", "target_core_mod");
-        rmmod("dwc3_pci", "dwc3");
+        rmmod("dwc3_haps", "dwc3_pci", "dwc3");
         rmmod("dwc2_pci", "dwc2");
         rmmod("snps_phy_tc");
         rmmod("phy_generic");
@@ -366,6 +379,10 @@ sub typec_debugfs {
 
 sub dwc3_debugfs {
     return debugfs("dwc3");
+}
+
+sub dwc3_pci_debugfs {
+    return debugfs("dwc3-haps");
 }
 
 sub dwc2_debugfs {
@@ -480,6 +497,6 @@ our @EXPORT = qw($BIN_DIR $LIB_DIR $SCRIPT_DIR $SCRIPT $TYPE rreg
 wreg run_as_root plat_is_x86 plat_is_arc plat_is_juno typec_debugfs
 dwc3_debugfs dwc2_debugfs dwc2_pci_debugfs rmmod validate_hex
 parse_bitfield genmask description no_options read_file write_file
-cmd autodie base initram unload enable_trace);
+cmd autodie base initram unload enable_trace dwc3_pci_debugfs);
 
 1;
