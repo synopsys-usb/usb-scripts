@@ -324,13 +324,15 @@ sub unload {
         }
     } elsif (($TYPE eq "typec") or ($TYPE eq "dwc3") or ($TYPE eq "dwc2")) {
         rmmod("g_mass_storage", "g_audio", "g_ether", "g_zero", "tcm_usb_gadget", "g_uas");
-        rmmod("usb_f_mass_storage", "usb_f_uac1", "usb_f_uac2", "usb_f_uas", "u_audio");
-        rmmod("usb_f_tcm", "iscsi_target_mod", "tcm_loop", "target_core_mod");
-        rmmod("dwc3_haps", "dwc3_pci", "dwc3");
-        rmmod("dwc2_pci", "dwc2");
+        rmmod("usb_f_mass_storage", "usb_f_uac1_legacy", "usb_f_uac1", "usb_f_uac2");
+        rmmod("usb_f_uas", "usb_f_tcm", "u_audio");
+        rmmod("iscsi_target_mod", "tcm_loop", "target_core_mod");
+        rmmod("libcomposite");
+        rmmod("dwc3", "dwc3_haps", "dwc3_pci");
+        rmmod("dwc2", "dwc2_pci");
+        rmmod("udc_core");
         rmmod("snps_phy_tc");
         rmmod("phy_generic");
-        rmmod("usb_f_mass_storage", "libcomposite", "udc_core");
     }
 }
 
