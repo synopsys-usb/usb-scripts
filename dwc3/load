@@ -56,11 +56,8 @@ sub main {
 
     if (defined $arg) {
         if ($arg eq 'audio') {
-            if (cmd("modinfo usb_f_uac2 > /dev/null")) {
-                cmd("modprobe u_audio");
-            }
             cmd("modprobe snd_usb_audio");
-            if (cmd("modinfo usb_f_uac2 > /dev/null")) {
+            if (!system("modprobe -q usb_f_uac2")) {
                 cmd("modprobe g_audio c_srate=48000");
             } else {
                 cmd("modprobe g_audio fn_play=/dev/snd/pcmC0D0p fn_cap=/dev/snd/pcmC0D0c fn_cntl=/dev/snd/controlC0");
