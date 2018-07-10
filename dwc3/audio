@@ -2,7 +2,7 @@
 
 use strict;
 
-description("Play/record stream audio data to/from host");
+description("Play/listen stream audio data to/from host");
 run_as_root();
 autodie();
 
@@ -10,18 +10,26 @@ sub usage {
     my $exit_code = shift;
 
     print <<EOF;
-usage: $SCRIPT <play|record>
+usage: $SCRIPT <listen [file]> | <play [file]>
 
 Play/record stream audio data to/from host.
-Note: this script is for UAC2 driver only.
+Note 1: this script is for UAC2 driver only.
+Note 2: this script must be updated to handle
+multiple audio gadget devices.
 
 Options:
-    play    Takes stream audio from UAC2
-            interface and play to default
-            audio OUT
+    listen  Takes stream audio from UAC2
+            interface and record to a file.
+            If no file is specified, play to
+            the default audio OUT.
+            Note: Applicable to peripheral
 
-    record  Takes default audio IN and
-            record to UAC2 interface
+    play    Takes a wav file and play to
+            the UAC2 interface. If no file is
+            specified, then record the audio
+            from default microphone
+            Note: Applicable to host
+
 EOF
 
     exit $exit_code;
@@ -29,6 +37,10 @@ EOF
 
 sub main {
     my $arg = shift @ARGV;
+    my $UAC2_DEV_HW = 'hw:CARD=UAC2Gadget,DEV=0';
+    my $UAC2_HOST_HW = 'hw:CARD=Gadget,DEV=0';
+    my $DEFAULT_PC_HW = 'hw:CARD=PCH,DEV=0';
+    my $file;
 
     usage(0) unless defined $arg;
 
@@ -37,10 +49,20 @@ sub main {
         exit(0);
     }
 
-    if ($arg eq 'play') {
-        cmd("arecord -f dat -t wav -D hw:CARD=UAC2Gadget,DEV=0 | aplay -D default");
-    } elsif ($arg eq 'record') {
-        cmd("arecord -f dat -t wav -D default | aplay -D hw:CARD=UAC2Gadget,DEV=0");
+    if ($arg eq 'listen') {
+        $file = shift @ARGV;
+        if (defined $file) {
+            cmd("arecord -f dat -t wav -D $UAC2_DEV_HW $file");
+        } else {
+            cmd("arecord -f dat -t wav -D $UAC2_DEV_HW | aplay -D $DEFAULT_PC_HW");
+        }
+    } elsif ($arg eq 'play') {
+        $file = shift @ARGV;
+        if (defined $file) {
+            cmd("aplay -f dat -t wav -D $UAC2_HOST_HW $file");
+        } else {
+            cmd("arecord -f dat -t wav -D $DEFAULT_PC_HW | aplay -D $UAC2_HOST_HW");
+        }
     } else {
         usage(0);
         exit(0);
