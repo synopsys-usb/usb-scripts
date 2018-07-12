@@ -34,6 +34,42 @@ EOF
     exit $exit_code;
 }
 
+sub do_completion {
+    my $comp_line = <STDIN>;
+    my @args = split /\s+/, $comp_line, -1;
+
+    my $partial_cmd = $args[2];
+    exit(0) if (!defined $partial_cmd);
+    exit(0) if (@args > 3);
+
+    my @cmds = grep { m/^$partial_cmd/ } ('play', 'listen');
+
+    print join(' ', @cmds);
+    exit 0;
+}
+
+sub do_list_completion {
+    my $comp_line = <STDIN>;
+    my @args = split /\s+/, $comp_line, -1;
+    my @files;
+
+    my $partial_cmd = $args[3];
+    exit(0) if (!defined $partial_cmd);
+    exit(0) if (@args > 4);
+
+    opendir my $dir, "." or exit 0;
+    my $filename;
+    while ($filename = readdir($dir)) {
+        push @files, $filename if -f $filename;
+    }
+    closedir $dir;
+
+    my @cmds = grep { m/^$partial_cmd/ } @files;
+
+    print join(' ', @cmds);
+    exit 0;
+}
+
 sub main {
     my $arg = shift @ARGV;
     my $UAC2_DEV_HW = 'hw:CARD=UAC2Gadget,DEV=0';
@@ -42,6 +78,14 @@ sub main {
     my $file;
 
     usage(0) unless defined $arg;
+
+    if ($arg eq "completion") {
+        do_completion();
+    }
+
+    if ($arg eq "list_completion") {
+        do_list_completion();
+    }
 
     if (!cmd("modinfo usb_f_uac2 > /dev/null")) {
         print "No UAC2 module found\n";

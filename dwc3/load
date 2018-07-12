@@ -26,6 +26,20 @@ my $UAC1_LEGACY_PARAMS = "modprobe g_audio " .
                   "fn_cap=/dev/snd/pcmC0D0c " .
                   "fn_cntl=/dev/snd/controlC0";
 
+sub do_completion {
+    my $comp_line = <STDIN>;
+    my @args = split /\s+/, $comp_line, -1;
+
+    my $partial_cmd = $args[2];
+    exit(0) if (!defined $partial_cmd);
+    exit(0) if (@args > 3);
+
+    my @cmds = grep { m/^$partial_cmd/ } ('audio', 'typec', 'ether');
+
+    print join(' ', @cmds);
+    exit 0;
+}
+
 sub set_properties {
     my $debugfs = shift;
     my $file = "$ENV{HOME}/dwc3_params.txt";
@@ -54,6 +68,10 @@ sub set_properties {
 
 sub main {
     my $arg = shift @ARGV;
+
+    if ($arg eq "completion") {
+        do_completion();
+    }
 
     unload();
     initram();

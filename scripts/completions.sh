@@ -7,7 +7,21 @@ __complete_dwc2()
 
 __complete_dwc3()
 {
-    COMPREPLY=( `echo -n "$COMP_LINE" | dwc3 completion` )
+    if [ $COMP_CWORD -eq 1 ]; then
+        COMPREPLY=( `echo -n "$COMP_LINE" | dwc3 completion` )
+    elif [ $COMP_CWORD -eq 2 ]; then
+        local arg=${COMP_WORDS[COMP_CWORD - 1]}
+        if [ "$arg" = "load" ] || [ "$arg" = "audio" ]; then
+            COMPREPLY=( `echo -n "$COMP_LINE" | dwc3 $arg completion` )
+        fi
+    elif [ $COMP_CWORD -eq 3 ]; then
+        local arg1=${COMP_WORDS[COMP_CWORD - 2]}
+        local arg2=${COMP_WORDS[COMP_CWORD - 1]}
+        if [ "$arg1" = "audio" ] &&
+            [ "$arg2" = "play" ] || [ "$arg2" = "listen" ]; then
+            COMPREPLY=( `echo -n "$COMP_LINE" | dwc3 $arg1 list_completion` )
+        fi
+    fi
 }
 
 __complete_dwc3_xhci()
