@@ -2,14 +2,14 @@
 
 use strict;
 
-description("Play/listen stream audio data to/from host");
+description("Play/record stream audio data to/from host");
 autodie();
 
 sub usage {
     my $exit_code = shift;
 
     print <<EOF;
-usage: $SCRIPT <listen [file]> | <play [file]>
+usage: $SCRIPT <listen in|out> | <play [file]> | <record [file]>
 
 Play/record stream audio data to/from host.
 Note 1: this script is for UAC2 driver only.
@@ -17,17 +17,35 @@ Note 2: this script must be updated to handle
 multiple audio gadget devices.
 
 Options:
-    listen  Takes stream audio from UAC2
-            interface and record to a file.
-            If no file is specified, play to
-            the default audio OUT.
-            Note: Applicable to peripheral
+    listen  Listen to IN or OUT audio stream
+            to/from a speaker/microphone.
 
-    play    Takes a wav file and play to
-            the UAC2 interface. If no file is
-            specified, then record the audio
-            from default microphone
-            Note: Applicable to host
+            Audio stream can come from a file
+            for the IN direction instead of
+            of the mic.
+
+            For example:
+            # dwc3 audio listen in piano2.wav
+
+            Note: Applicable for peripheral.
+
+    play    For Audio OUT, take a wav file
+            and play to the UAC2 interface.
+            If no file is specified, then
+            record the audio from default
+            microphone.
+
+            Note: Applicable for audio OUT
+            direction from host side.
+
+    record  For audio IN, record audio stream
+            from the UAC2 interface and save
+            to a file. If no file is specified,
+            then the recording audio will play
+            to the default speaker.
+
+            Note: Applicable for audio IN
+            direction from host side.
 
 EOF
 
@@ -42,20 +60,27 @@ sub do_completion {
     exit(0) if (!defined $partial_cmd);
     exit(0) if (@args > 3);
 
-    my @cmds = grep { m/^$partial_cmd/ } ('play', 'listen');
+    my @cmds = grep { m/^$partial_cmd/ } ('play', 'record', 'listen');
 
     print join(' ', @cmds);
     exit 0;
 }
 
-sub do_list_completion {
+sub do_audio_completion {
     my $comp_line = <STDIN>;
     my @args = split /\s+/, $comp_line, -1;
+    my @cmds;
     my @files;
 
-    my $partial_cmd = $args[3];
+    my $partial_cmd = $args[@args - 1];
     exit(0) if (!defined $partial_cmd);
-    exit(0) if (@args > 4);
+    exit(0) if (@args > 5);
+
+    if (@args == 4 and $args[2] eq 'listen') {
+        @cmds = grep { m/^$partial_cmd/ } ('in', 'out');
+        print join(' ', @cmds);
+        exit 0;
+    }
 
     opendir my $dir, "." or exit 0;
     my $filename;
@@ -64,7 +89,7 @@ sub do_list_completion {
     }
     closedir $dir;
 
-    my @cmds = grep { m/^$partial_cmd/ } @files;
+    @cmds = grep { m/^$partial_cmd/ } @files;
 
     print join(' ', @cmds);
     exit 0;
@@ -83,8 +108,8 @@ sub main {
         do_completion();
     }
 
-    if ($arg eq "list_completion") {
-        do_list_completion();
+    if ($arg eq "audio_completion") {
+        do_audio_completion();
     }
 
     if (!cmd("modinfo usb_f_uac2 > /dev/null")) {
@@ -93,22 +118,44 @@ sub main {
     }
 
     if ($arg eq 'listen') {
-        $file = shift @ARGV;
-        if (defined $file) {
-            cmd("arecord -f dat -t wav -D $UAC2_DEV_HW $file");
-        } else {
-            cmd("arecord -f dat -t wav -D $UAC2_DEV_HW | aplay -D $DEFAULT_PC_HW");
+        my $direction = shift @ARGV;
+        if (!defined $direction) {
+            print "Please specify 'in' or 'out' direction\n";
+            exit(0);
+        }
+
+        if ($direction eq 'in') {
+            my $file = shift @ARGV;
+
+            if (defined $file) {
+                print "Listening from a file $file...\n";
+                cmd("aplay -f dat -t wav -D $UAC2_DEV_HW $file");
+            } else {
+                print "Listening from a mic...\n";
+                cmd("arecord -q -f dat -t wav -D $DEFAULT_PC_HW | aplay -q -D $UAC2_DEV_HW");
+            }
+        } elsif ($direction eq 'out') {
+            print "Listening from host...\n";
+            cmd("arecord -q -f dat -t wav -D $UAC2_DEV_HW | aplay -q -D $DEFAULT_PC_HW");
         }
     } elsif ($arg eq 'play') {
-        $file = shift @ARGV;
+        my $file = shift @ARGV;
+
         if (defined $file) {
             cmd("aplay -f dat -t wav -D $UAC2_HOST_HW $file");
         } else {
             cmd("arecord -f dat -t wav -D $DEFAULT_PC_HW | aplay -D $UAC2_HOST_HW");
         }
+    } elsif ($arg eq 'record') {
+        my $file = shift @ARGV;
+
+        if (defined $file) {
+            cmd("arecord -f dat -t wav -D $UAC2_HOST_HW $file");
+        } else {
+            cmd("arecord -f dat -t wav -D $UAC2_HOST_HW | aplay -q -D $DEFAULT_PC_HW");
+        }
     } else {
         usage(0);
-        exit(0);
     }
 }
 
