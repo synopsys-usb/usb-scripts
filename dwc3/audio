@@ -3,7 +3,6 @@
 use strict;
 
 description("Play/listen stream audio data to/from host");
-run_as_root();
 autodie();
 
 sub usage {
