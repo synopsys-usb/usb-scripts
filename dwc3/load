@@ -6,6 +6,26 @@ description("Load the dwc3 module");
 run_as_root();
 autodie();
 
+my $SNPS_VID = 0x053F;
+my $SNPS_PID_MSC = 0x8BD8;
+my $SNPS_PID_UAC = 0x8BD9;
+
+my $MSC_PARAMS = "modprobe g_mass_storage " .
+                 "idVendor=$SNPS_VID idProduct=$SNPS_PID_MSC " .
+                 "file=/dev/ram0 " .
+                 "iSerialNumber=000020160529 removable=0";
+
+my $UAC2_PARAMS = "modprobe g_audio " .
+                  "idVendor=$SNPS_VID idProduct=$SNPS_PID_UAC " .
+                  "c_srate=48000 c_ssize=2 c_chmask=3 " .
+                  "p_srate=48000 p_ssize=2 p_chmask=3";
+
+my $UAC1_LEGACY_PARAMS = "modprobe g_audio " .
+                  "idVendor=$SNPS_VID idProduct=$SNPS_PID_UAC " .
+                  "fn_play=/dev/snd/pcmC0D0p " .
+                  "fn_cap=/dev/snd/pcmC0D0c " .
+                  "fn_cntl=/dev/snd/controlC0";
+
 sub set_properties {
     my $debugfs = shift;
     my $file = "$ENV{HOME}/dwc3_params.txt";
@@ -58,9 +78,9 @@ sub main {
         if ($arg eq 'audio') {
             cmd("modprobe snd_usb_audio");
             if (!system("modprobe -q usb_f_uac2")) {
-                cmd("modprobe g_audio c_srate=48000 c_ssize=2 c_chmask=3 p_srate=48000 p_ssize=2 p_chmask=3");
+                cmd($UAC2_PARAMS);
             } else {
-                cmd("modprobe g_audio fn_play=/dev/snd/pcmC0D0p fn_cap=/dev/snd/pcmC0D0c fn_cntl=/dev/snd/controlC0");
+                cmd($UAC1_LEGACY_PARAMS);
             }
             return;
         } elsif ($arg eq 'ether') {
@@ -71,7 +91,7 @@ sub main {
         }
     }
 
-    cmd("modprobe g_mass_storage file=/dev/ram0 idVendor=1343 idProduct=35800 iSerialNumber=000020160529 removable=0");
+    cmd($MSC_PARAMS);
 }
 
 main();
