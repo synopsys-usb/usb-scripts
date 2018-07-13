@@ -1,5 +1,5 @@
 INSTALL_DIR := $(INSTALL_DIR)/dwc3_commands
-SCRIPTS := load info audio
+SCRIPTS := load info
 
 install:
 	@$(INSTALL) 0755 $(INSTALL_DIR) $(SCRIPTS)
@@ -10,5 +10,6 @@ install:
 	@ln -fs $(DWC_LIB_DIR)/trace $(INSTALL_DIR)/trace
 	@ln -fs $(DWC_LIB_DIR)/enable_trace $(INSTALL_DIR)/enable_trace
 	@ln -fs $(DWC_LIB_DIR)/regdump $(INSTALL_DIR)/regdump
+	@ln -fs $(DWC_LIB_DIR)/audio $(INSTALL_DIR)/audio
 
 .PHONY: install
