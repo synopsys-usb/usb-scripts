@@ -17,10 +17,10 @@ __complete_dwc3()
     elif [ $COMP_CWORD -ge 3 ]; then
         local arg1=${COMP_WORDS[1]}
         local arg2=${COMP_WORDS[2]}
-        if [ "$arg1" = "audio" ] &&
+        if [ "$arg1" = "audio" ] && {
             [ "$arg2" = "play" ] ||
             [ "$arg2" = "record" ] ||
-            [ "$arg2" = "listen" ]; then
+            [ "$arg2" = "listen" ]; }; then
             COMPREPLY=( `echo -n "$COMP_LINE" | dwc3 $arg1 audio_completion` )
         fi
     fi
