@@ -56,9 +56,10 @@ sub do_completion {
     my $comp_line = <STDIN>;
     my @args = split /\s+/, $comp_line, -1;
 
-    my $partial_cmd = $args[2];
+    exit(0) if (@args < 1);
+
+    my $partial_cmd = $args[@args - 1];
     exit(0) if (!defined $partial_cmd);
-    exit(0) if (@args > 3);
 
     my @cmds = grep { m/^$partial_cmd/ } ('play', 'record', 'listen');
 
@@ -72,11 +73,12 @@ sub do_audio_completion {
     my @cmds;
     my @files;
 
+    exit(0) if (@args < 1);
+
     my $partial_cmd = $args[@args - 1];
     exit(0) if (!defined $partial_cmd);
-    exit(0) if (@args > 5);
 
-    if (@args == 4 and $args[2] eq 'listen') {
+    if (@args > 2 and $args[@args - 2] eq 'listen') {
         @cmds = grep { m/^$partial_cmd/ } ('in', 'out');
         print join(' ', @cmds);
         exit 0;
