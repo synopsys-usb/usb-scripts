@@ -46,6 +46,7 @@ install: build uninstall VERSION
 	@$(MAKE) -s -C dwc3 install
 	@$(MAKE) -s -C dwc3-xhci install
 	@$(MAKE) -s -C dwc2 install
+	@$(MAKE) -s -C haps install
 	@$(INSTALL) 0644 $(INSTALL_DIR) VERSION
 
 tarball:

@@ -18,6 +18,7 @@ make_links:
 	@ln -fs $(DWC_LIB_DIR)/dwc.pl $(INSTALL_DIR)/dwc3
 	@ln -fs $(DWC_LIB_DIR)/dwc.pl $(INSTALL_DIR)/dwc2
 	@ln -fs $(DWC_LIB_DIR)/dwc.pl $(INSTALL_DIR)/typec
+	@ln -fs $(DWC_LIB_DIR)/dwc.pl $(INSTALL_DIR)/haps
 	@ln -fs $(DWC_LIB_DIR)/audio $(INSTALL_DIR)/audio
 	@ln -fs rreg $(INSTALL_DIR)/rd
 	@ln -fs wreg $(INSTALL_DIR)/wr

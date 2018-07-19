@@ -1,5 +1,16 @@
 #!/bin/bash
 
+__complete_haps()
+{
+    local arg=${COMP_WORDS[1]}
+
+    if [ $COMP_CWORD -eq 1 ]; then
+        COMPREPLY=( `echo -n "$COMP_LINE" | haps completion` )
+    elif [ $COMP_CWORD -eq 2 ] && [ "$arg" = "load" ]; then
+        COMPREPLY=( `echo -n "$COMP_LINE" | haps $arg completion` )
+    fi
+}
+
 __complete_audio()
 {
     local arg=${COMP_WORDS[COMP_CWORD - 1]}
@@ -38,6 +49,7 @@ __complete_dwc3_xhci()
     COMPREPLY=( `echo -n "$COMP_LINE" | dwc3-xhci completion` )
 }
 
+complete -F __complete_haps haps
 complete -F __complete_audio audio
 complete -F __complete_dwc2 dwc2
 complete -F __complete_dwc3 dwc3

@@ -25,7 +25,7 @@ sub initialize {
     }
 
     if (@ARGV) {
-        if ($ARGV[-1] =~ m/type=(typec$|dwc2$|dwc3$|dwc3\-xhci$)/) {
+        if ($ARGV[-1] =~ m/type=(haps$|typec$|dwc2$|dwc3$|dwc3\-xhci$)/) {
             $TYPE = $1;
             $DWC_SCRIPT = 1;
             pop @ARGV;

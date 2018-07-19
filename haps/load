@@ -1,0 +1,120 @@
+#!/usr/bin/perl
+
+use strict;
+
+description("Load umrusb driver");
+autodie();
+
+sub usage {
+    my $exit_code = shift;
+
+    print <<EOF;
+usage: $SCRIPT [file]
+
+Load umrusb driver.
+
+Options:
+    file    The bit file or project.conf file
+            to program to HAPS
+
+EOF
+
+    exit $exit_code;
+}
+
+sub do_completion {
+    my $comp_line = <STDIN>;
+    my @args = split /\s+/, $comp_line, -1;
+    my @cmds;
+    my @files;
+
+    exit(0) if (@args < 1);
+
+    my $partial_cmd = $args[@args - 1];
+    exit(0) if (!defined $partial_cmd);
+
+    opendir my $dir, "." or exit 0;
+    my $filename;
+    while ($filename = readdir($dir)) {
+        push @files, $filename if -f $filename;
+    }
+    closedir $dir;
+
+    @cmds = grep { m/^$partial_cmd/ } @files;
+
+    print join(' ', @cmds);
+    exit 0;
+}
+
+sub parse_scan {
+    my $scan = shift @ARGV;
+}
+
+sub main {
+    my $arg = shift @ARGV;
+
+    if ($arg eq "completion") {
+        do_completion();
+    }
+
+    if (!defined $arg) {
+        if (system("sudo modprobe -q umrusb")) {
+            print "umrusb driver not found\n";
+            exit 1;
+        }
+        exit 0;
+    }
+
+    if (system("which confpro > /dev/null")) {
+        print "confpro not found\n";
+        exit 1;
+    }
+
+    my $output;
+    cmd("confpro cfg_scan", \$output);
+    if (!defined $output) {
+        print "No device found\n";
+        exit 0;
+    }
+
+    my @devices = ($output =~ m/emu:\d+?/g);
+    my @serials = ($output =~ m/SERIAL \{.+?\}/g);
+    my $emu;
+
+    if (@devices == 1) {
+        $emu = $devices[0];
+    } elsif (@devices > 1) {
+        my $num;
+
+        SELECT:
+        print "Select device number below:\n";
+        my $count = 1;
+        for (@devices) {
+            print "$count) $serials[$count++ - 1]\n";
+        }
+
+        print "Device: ";
+        $num = <STDIN>;
+        chomp $num;
+        if (($num !~ m/\d+/) || ($num >= $count) || ($num <= 0)) {
+            print "Please provide a valid number\n\n";
+            goto SELECT;
+        }
+
+        $emu = $devices[$num - 1];
+    } else {
+        print "Couldn't find device number\n";
+        exit 1;
+    }
+
+    if ($arg =~ m/\.bi(n$|t$)/) {
+        cmd("confpro $emu cfg_config_data FB1_A $arg");
+    } elsif ($arg =~ m/\.conf$/) {
+        cmd("confpro $emu cfg_project_configure $arg");
+    } else {
+        print "Requires a valid file\n";
+        exit 1;
+    }
+}
+
+main();
