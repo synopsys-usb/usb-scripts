@@ -35,6 +35,15 @@ sub print_status {
         $GDBGLTSSM = rreg(0xc164);
     }
 
+    my $GHWPARAMS0 = rreg(0xc140);
+    my $hw_mode = ($GHWPARAMS0 & 0x3);
+
+    my $hw_mode_name;
+    if ($hw_mode == 0) { $hw_mode_name = "device" }
+    elsif ($hw_mode == 1) { $hw_mode_name = "host" }
+    elsif ($hw_mode == 2) { $hw_mode_name = "drd" }
+    print "HW mode: $hw_mode_name\n";
+
     my $num = $GDBGLTSSM;
     $num = $num & 0x03C00000;
     $num = ($num >> 22) ;
