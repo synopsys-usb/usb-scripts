@@ -18,10 +18,10 @@ sub i2c_read {
     chomp $reg;
 
     if ($arg eq 'tcpc') {
-        cmd("echo -n ${TCPC}r$reg > $TC_DEBUGFS/i2c");
+        system("sudo echo -n -e ${TCPC}r$reg\\\\0 > $TC_DEBUGFS/i2c");
         cmd("cat $TC_DEBUGFS/i2c");
     } elsif ($arg eq 'tca') {
-        cmd("echo -n ${TCA}r$reg > $TC_DEBUGFS/i2c");
+        system("sudo echo -n -e ${TCA}r$reg\\\\0 > $TC_DEBUGFS/i2c");
         cmd("cat $TC_DEBUGFS/i2c");
     } else {
         print "typec i2c <tca|tcpc> <reg>\n";
@@ -37,10 +37,10 @@ sub i2c_write {
     chomp $value;
 
     if ($arg eq 'tcpc') {
-        cmd("echo -n \"${TCPC}w$reg $value\" > $TC_DEBUGFS/i2c");
+        system("sudo echo -n \"${TCPC}w$reg $value\" > $TC_DEBUGFS/i2c");
         cmd("cat $TC_DEBUGFS/i2c");
     } elsif ($arg eq 'tca') {
-        cmd("echo -n \"${TCA}w$reg $value\" > $TC_DEBUGFS/i2c");
+        system("sudo echo -n \"${TCA}w$reg $value\" > $TC_DEBUGFS/i2c");
         cmd("cat $TC_DEBUGFS/i2c");
     } else {
         print "typec i2c <tca|tcpc> <value> <reg>\n";
