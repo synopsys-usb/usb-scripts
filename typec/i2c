@@ -3,7 +3,6 @@
 use strict;
 
 description("Read TCA/TCPC regs");
-run_as_root();
 autodie();
 
 sub usage {
@@ -38,15 +37,31 @@ EOF
 }
 
 #my $PCI_SYSFS='/sys/devices/pci0000:00/0000:00:01.0/0000:01:00.2';
-my $TC_DEBUGFS = typec_debugfs();
 my $TCPC='1';
 my $TCA='0';
+
+sub do_completion {
+    my $comp_line = <STDIN>;
+    my @args = split /\s+/, $comp_line, -1;
+
+    exit(0) if (@args < 1);
+
+    my $partial_cmd = $args[@args - 1];
+    exit(0) if (!defined $partial_cmd);
+
+    my @cmds = grep { m/^$partial_cmd/ } ('tca', 'tcpc');
+
+    print join(' ', @cmds);
+    exit 0;
+}
 
 sub i2c_read {
     my $arg = shift;
     my $reg = shift;
 
     chomp $reg;
+
+    my $TC_DEBUGFS = typec_debugfs();
 
     if ($arg eq 'tcpc') {
         system("sudo echo -n -e ${TCPC}r$reg\\\\0 > $TC_DEBUGFS/i2c");
@@ -67,6 +82,8 @@ sub i2c_write {
     chomp $reg;
     chomp $value;
 
+    my $TC_DEBUGFS = typec_debugfs();
+
     if ($arg eq 'tcpc') {
         system("sudo echo -n \"${TCPC}w$reg $value\" > $TC_DEBUGFS/i2c");
         cmd("cat $TC_DEBUGFS/i2c");
@@ -80,6 +97,14 @@ sub i2c_write {
 
 sub main {
     my $num_arg = $#ARGV + 1;
+
+    if ($ARGV[0] eq "completion") {
+        do_completion();
+    }
+
+    usage(0) if $num_arg < 2;
+
+    run_as_root();
 
     if ($num_arg == 2) {
         i2c_read(@ARGV);
