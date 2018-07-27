@@ -6,6 +6,37 @@ description("Read TCA/TCPC regs");
 run_as_root();
 autodie();
 
+sub usage {
+    my $exit_code = shift;
+
+    print <<EOF;
+usage: $SCRIPT <tca|tcpc> [value] <reg>
+
+Do i2c read/write to TCA or TCPC block.
+
+Options:
+    tca     R/W to TCA block
+
+    tcpc    R/W to TCPC block
+
+    reg     Register offset
+
+    value   Value to write to register. If not
+            specify, then only do READ operation.
+            If specified, then do WRITE operation.
+            
+For example:
+To read TCA block:
+ \$ typec i2c TCA 0x1a
+
+To write to TCPC block
+ \$ typec i2c TCPC 12 0xaa
+
+EOF
+
+    exit $exit_code;
+}
+
 #my $PCI_SYSFS='/sys/devices/pci0000:00/0000:00:01.0/0000:01:00.2';
 my $TC_DEBUGFS = typec_debugfs();
 my $TCPC='1';
@@ -24,7 +55,7 @@ sub i2c_read {
         system("sudo echo -n -e ${TCA}r$reg\\\\0 > $TC_DEBUGFS/i2c");
         cmd("cat $TC_DEBUGFS/i2c");
     } else {
-        print "typec i2c <tca|tcpc> <reg>\n";
+        usage(1);
     }
 }
 
@@ -43,7 +74,7 @@ sub i2c_write {
         system("sudo echo -n \"${TCA}w$reg $value\" > $TC_DEBUGFS/i2c");
         cmd("cat $TC_DEBUGFS/i2c");
     } else {
-        print "typec i2c <tca|tcpc> <value> <reg>\n";
+        usage(1);
     }
 }
 
@@ -55,7 +86,7 @@ sub main {
     } elsif ($num_arg == 3) {
         i2c_write(@ARGV);
     } else {
-        print "Wrong number of args\n";
+        usage(0);
     }
 }
 
