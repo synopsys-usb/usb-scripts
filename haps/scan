@@ -1,0 +1,9 @@
+#!/usr/bin/perl
+
+use strict;
+
+description("Scan for available devices");
+autodie();
+
+haps_scan();
+
