@@ -1,3 +1,9 @@
+VERSION = 1
+PATCHLEVEL = 0
+SUBLEVEL = 0
+
+USBSCRIPTS_VERSION = $(VERSION)$(if $(PATCHLEVEL),.$(PATCHLEVEL)$(if $(SUBLEVEL),.$(SUBLEVEL)))
+
 CC = $(CROSS_COMPILE)gcc
 
 default: build
@@ -33,10 +39,10 @@ export CC INSTALL_DIR DWC_LIB_DIR MODULE_DIR INSTALL
 build:
 	@$(MAKE) -s -C src
 
-VERSION:
-	@scripts/gitversion
+init_version:
+	@echo $(USBSCRIPTS_VERSION)-`scripts/gitversion` > VERSION
 
-version: VERSION
+version: init_version
 	@cat VERSION
 
 install: build uninstall VERSION
@@ -57,6 +63,6 @@ clean:
 	@$(MAKE) -s -C src clean
 	@rm -rf .tarball usb-scripts.tar.gz VERSION
 
-.PHONY: default build install clean uninstall VERSION version
+.PHONY: default build install clean uninstall init_verison version
 
 print-%: ; @echo $*=$($*)

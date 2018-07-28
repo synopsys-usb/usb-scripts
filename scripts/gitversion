@@ -10,11 +10,11 @@ $DIR = "$DIR/..";
 if (!-d "$DIR/.git") {
     # Versioning not support outside of git
     if (!-f "$DIR/.gitversion") {
-	print "Not in git repository\n";
+        exit (1);
     }
 
     system("cp $DIR/.gitversion $DIR/VERSION");
-    print "Couldn't create VERSION\n" if $?;
+    exit(1) if $?;
 
     exit(0);
 }
@@ -22,4 +22,4 @@ if (!-d "$DIR/.git") {
 my $out = `git rev-parse --short HEAD`;
 
 chomp $out;
-system("echo $out > $DIR/VERSION");
+print $out;
