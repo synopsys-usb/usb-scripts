@@ -46,10 +46,6 @@ sub do_completion {
     exit 0;
 }
 
-sub parse_scan {
-    my $scan = shift @ARGV;
-}
-
 sub main {
     my $arg = shift @ARGV;
 
@@ -57,54 +53,14 @@ sub main {
         do_completion();
     }
 
-    if (!defined $arg) {
-        if (system("sudo modprobe -q umrusb")) {
-            print "umrusb driver not found\n";
-            exit 1;
-        }
-        exit 0;
-    }
-
-    if (system("which confpro > /dev/null")) {
-        print "confpro not found\n";
+    if (haps_check_requirement()) {
         exit 1;
     }
 
-    my $output;
-    cmd("confpro cfg_scan", \$output);
-    if (!defined $output) {
+    my $emu = haps_get_device();
+    if (!defined $emu) {
         print "No device found\n";
         exit 0;
-    }
-
-    my @devices = ($output =~ m/emu:\d+?/g);
-    my @serials = ($output =~ m/SERIAL \{.+?\}/g);
-    my $emu;
-
-    if (@devices == 1) {
-        $emu = $devices[0];
-    } elsif (@devices > 1) {
-        my $num;
-
-        SELECT:
-        print "Select device number below:\n";
-        my $count = 1;
-        for (@devices) {
-            print "$count) $serials[$count++ - 1]\n";
-        }
-
-        print "Device: ";
-        $num = <STDIN>;
-        chomp $num;
-        if (($num !~ m/\d+/) || ($num >= $count) || ($num <= 0)) {
-            print "Please provide a valid number\n\n";
-            goto SELECT;
-        }
-
-        $emu = $devices[$num - 1];
-    } else {
-        print "Couldn't find device number\n";
-        exit 1;
     }
 
     if ($arg =~ m/\.bi(n$|t$)/) {

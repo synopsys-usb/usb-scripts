@@ -22,6 +22,18 @@ if (!-d $dir) {
         or die "Invalid directory $dir";
 }
 
+my @libscripts;
+push @libscripts, "USBScripts";
+if ($dir =~ m/haps_commands/) {
+    push @libscripts, "HAPSScripts";
+}
+
+my $script;
+my $modules;
+for $script (@libscripts) {
+    $modules .= "use $script;\n";
+}
+
 sub read_file {
     my $file = shift;
 
@@ -54,7 +66,7 @@ for $file (@files) {
     my $contents = read_file($file);
     if ($contents =~ m/(^\#\!\/usr\/bin\/perl.*\n)/) {
         $perl = 1;
-        $contents =~ s/($1)/$1\nuse lib '$moddir';\nuse USBScripts;\n/;
+        $contents =~ s/($1)/$1\nuse lib '$moddir';\n$modules/;
         $file = "$file.install";
         write_file($file, $contents);
     }
