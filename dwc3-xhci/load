@@ -17,7 +17,9 @@ sub main {
     } elsif (plat_is_x86()) {
         if (base()) {
             cmd("modprobe dwc3");
-            cmd("modprobe dwc3_pci");
+            if (system("modprobe -q dwc3_haps")) {
+                cmd("modprobe dwc3_pci");
+            }
         } else {
             cmd("modprobe xhci_pci");
         }
