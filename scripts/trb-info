@@ -1,0 +1,99 @@
+#!/usr/bin/perl
+
+use strict;
+
+description("Parse TRB's configurations");
+sub usage {
+    my $exit_code = shift;
+
+    print <<USAGE_EOF;
+usage: $SCRIPT [<TRB first 32 bits>] <TRB last 32 bits>
+
+Parse TRB configuration and status. (Not the address bits)
+
+e.g.
+\$ trb 0x00001000 0x00000415
+
+USAGE_EOF
+    exit $exit_code;
+}
+
+sub main {
+    my $id;
+    my $first_32bits;
+    my $last_32bits;
+
+    if (!@ARGV) {
+        usage(0);
+    } elsif (scalar @ARGV eq 1) {
+        $last_32bits = shift @ARGV;
+        chomp $last_32bits;
+    } else {
+        $first_32bits = shift @ARGV;
+        $last_32bits = shift @ARGV;
+        chomp $last_32bits;
+    }
+
+    if (!defined $first_32bits) {
+        goto SKIP;
+    }
+
+    my $first_hex_fields =  hex($first_32bits);
+
+    my $bufsiz = $first_hex_fields & 0xffffff;
+    my $pcm1 = ($first_hex_fields & (0x3 << 24)) >> 24;
+    my $trbsts = ($first_hex_fields & (0xf << 28)) >> 28;
+    my $trbsts_str = "Unknown";
+
+    if ($trbsts eq 0) { $trbsts_str = "OK" }
+    elsif ($trbsts eq 1) { $trbsts_str = "MissedIsoc" }
+    elsif ($trbsts eq 2) { $trbsts_str = "SetupPending" }
+    elsif ($trbsts eq 4) { $trbsts_str = "TransferInProgress" }
+
+    printf <<TRB_STATUS1;
+DW OB-08
+--------
+        TRB status: $trbsts_str
+        PCM1:       $pcm1
+        BUFSIZ:     $bufsiz
+
+TRB_STATUS1
+
+    SKIP:
+    my $last_hex_fields =  hex($last_32bits);
+
+    my $hwo = $last_hex_fields & 0x1;
+    my $lst = ($last_hex_fields & (0x1 << 1)) >> 1;
+    my $chn = ($last_hex_fields & (0x1 << 2)) >> 2;
+    my $csp = ($last_hex_fields & (0x1 << 3)) >> 3;
+    my $trbctl = ($last_hex_fields & (0x3f << 4)) >> 4;
+    my $isp_imi = ($last_hex_fields & (0x1 << 10)) >> 10;
+    my $ioc = ($last_hex_fields & (0x1 << 11)) >> 11;
+    my $sid_sofn = ($last_hex_fields & (0xffff << 14)) >> 14;
+
+    my $trbctl_str = "Unknown";
+    if ($trbctl eq 1) { $trbctl_str = "Normal" }
+    elsif ($trbctl eq 2) { $trbctl_str = "Control-Setup" }
+    elsif ($trbctl eq 3) { $trbctl_str = "Control-Status-2" }
+    elsif ($trbctl eq 4) { $trbctl_str = "Control-Status-3" }
+    elsif ($trbctl eq 5) { $trbctl_str = "Control-Data" }
+    elsif ($trbctl eq 6) { $trbctl_str = "Isoc-first" }
+    elsif ($trbctl eq 7) { $trbctl_str = "Isoc" }
+    elsif ($trbctl eq 8) { $trbctl_str = "Linked-TRB" }
+
+    printf <<TRB_STATUS2;
+DW 0F-0C
+--------
+        SID/SOFN:   $sid_sofn
+        IOC:        $ioc
+        ISP/IMI:    $isp_imi
+        TRBCTRL:    $trbctl_str
+        CSP:        $csp
+        CHN:        $chn
+        LST:        $lst
+        HWO:        $hwo
+
+TRB_STATUS2
+}
+
+main();
