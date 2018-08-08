@@ -101,10 +101,7 @@ sub _cmd {
     }
 
     if (!close($f)) {
-        if (!$!) {
-            # Command returned non-zero status
-            warn("Command failed $?\n");
-        } else {
+        if ($!) {
             # Other issue with running the command
             warn("$!\n");
         }
