@@ -1,0 +1,204 @@
+#!/usr/bin/perl
+
+use strict;
+
+description("Git repository management tool");
+
+my $PROJ_ID;
+
+sub usage {
+    my $exit_code = shift;
+
+    print <<USAGE_EOF;
+usage: $SCRIPT <commands> [<repo's owner>] [<branch>|<repo url>]
+
+commands:
+    sync      Fetch the latest changes and switch to
+              the repo's branch
+
+    status    Shows the status of the current branch
+
+    add       Add a remote repository
+
+    clone     clone a repository
+
+For example:
+To sync with Thinh's 'typec' branch
+    \$ repo sync thinh typec
+
+To show status of the current repo of 'next' branch
+    \$ repo status thinh next
+
+To add Thinh's repository
+    \$ repo add thinh http://example.com/thinh/repo.git
+
+To clone Thinh's repository of the 'next' branch
+    \$ repo clone http://example.com/thinh/repo.git next
+
+USAGE_EOF
+    exit $exit_code;
+}
+
+sub init {
+    my $owner = shift;
+
+    if (!defined $owner) {
+        print "Please provide repo owner's name\n";
+        exit 1;
+    }
+
+    my $usr;
+
+    # Special case for thinh's repo.
+    if ($owner eq "thinh") {
+        $usr = "thinhn";
+    } else {
+        $usr = $owner;
+    }
+
+    my $output;
+    cmd("git remote -v | grep $usr", \$output);
+
+    if ($output =~ m/^(\w+).*$usr\//) {
+        $PROJ_ID = $1;
+    } else {
+        print "Repo from $owner is not found\n";
+        exit 1;
+    }
+}
+
+sub status {
+    my $branch = shift;
+
+    if (!defined $branch) {
+        print "Please provide branch name\n";
+        return;
+    }
+
+    if (!cmd("git branch -r | grep $PROJ_ID/$branch > /dev/null")) {
+        print "$branch is not found\n";
+        return;
+    }
+
+    my $output;
+    cmd("git fetch --dry-run $PROJ_ID $branch 2>&1 | grep $PROJ_ID", \$output);
+    if (defined $output) {
+        my $cur_commit;
+        my $head_commit;
+
+        if ($output =~ m/([\da-fA-F]+)\.\.([\da-fA-F]+)/) {
+            $cur_commit = $1;
+            $head_commit = $2;
+            print "Current commit is $cur_commit\n";
+            print "HEAD commit is $head_commit\n\n";
+            print "Repo is NOT up-to-date\n\n";
+        } else {
+            print "Repo is up-to-date\n\n";
+            print $output;
+        }
+    } else {
+        print "Something's wrong. Check with admin.\n";
+        exit 1;
+    }
+
+    cmd("git status", \$output);
+    if ($output =~ m/modified/) {
+        print "Current repo is dirty. Modified files:\n";
+    }
+
+    while ($output =~ m/modified:(.*)/g) {
+        print "$1\n";
+    }
+}
+
+sub add_repo {
+    my $owner = shift;
+    my $url = shift;
+
+    if (!defined $owner) {
+        print "Please provide repo's name\n";
+        return;
+    }
+
+    if (!defined $url || !($url =~ m/(^http)|(^ssh)|(^git)/)) {
+        print "Please provide valid link\n";
+        return;
+    }
+
+    if (cmd("git remote -v | grep -w $url")) {
+        print "$url was already added\n";
+        return;
+    }
+
+    cmd("git remote add $owner $url");
+}
+
+sub sync {
+    my $branch = shift;
+
+    if (!defined $branch) {
+        print "Please provide branch name\n";
+        return;
+    }
+
+    if (!cmd("git branch -r | grep $PROJ_ID/$branch > /dev/null")) {
+        print "$branch is not found\n";
+        return;
+    }
+
+    cmd("git fetch $PROJ_ID");
+    cmd("git checkout -f $branch");
+    cmd("git reset --hard $PROJ_ID/$branch");
+}
+
+sub clone {
+    my $url = shift;
+    my $branch = shift;
+
+    if (!defined $url || !($url =~ m/(^http)|(^ssh)|(^git)/)) {
+        print "Please provide a valid URL\n";
+        exit(1);
+    }
+
+    if (defined $branch) {
+        cmd("git clone $url -b $branch");
+    } else {
+        cmd("git clone $url");
+    }
+}
+
+sub main {
+    my $command = shift @ARGV;
+    my $owner = shift @ARGV;
+    my $branch = shift @ARGV;
+
+    if (!defined $command) {
+        usage(0);
+    }
+
+    if ($command eq "clone") {
+        my $url = $owner;
+        clone($url, $branch);
+        return;
+    }
+
+    if ($command eq "add") {
+        my $url = $branch;
+        add_repo($owner, $url);
+        return;
+    }
+
+    init($owner);
+
+    if ($command eq "sync") {
+        sync($branch);
+        return;
+    }
+
+    if ($command eq "status") {
+        status($branch);
+        return;
+    }
+}
+
+main();
