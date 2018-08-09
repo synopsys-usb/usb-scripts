@@ -45,7 +45,7 @@ init_version:
 version: init_version
 	@cat VERSION
 
-install: build uninstall VERSION
+install: build uninstall init_version
 	@$(MAKE) -s -C src install
 	@$(MAKE) -s -C scripts install
 	@$(MAKE) -s -C typec install
