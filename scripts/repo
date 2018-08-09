@@ -89,8 +89,8 @@ sub status {
         if ($output =~ m/([\da-fA-F]+)\.\.([\da-fA-F]+)/) {
             $cur_commit = $1;
             $head_commit = $2;
-            print "Current commit is $cur_commit\n";
-            print "HEAD commit is $head_commit\n\n";
+            print "HEAD commit is $cur_commit\n";
+            print "Remote $branch commit is $head_commit\n\n";
             print "Repo is NOT up-to-date\n\n";
         } else {
             print "Repo is up-to-date\n\n";
