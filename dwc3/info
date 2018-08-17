@@ -45,6 +45,7 @@ sub print_status {
     }
 
     my $GHWPARAMS0 = rreg(0xc140);
+    my $GCTL = rreg(0xc110);
     my $hw_mode = ($GHWPARAMS0 & 0x3);
 
     my $hw_mode_name;
@@ -52,69 +53,74 @@ sub print_status {
     elsif ($hw_mode == 1) { $hw_mode_name = "host" }
     elsif ($hw_mode == 2) { $hw_mode_name = "drd" }
 
-    # Find device speed
-    my $DSTS = rreg(0xc70c);
-    my $lane = ($DSTS & (1 << 30)) ? "2-lane" : "1-lane";
-    my $speed_num = $DSTS & 7;
+    my $prtcapdir = ($GCTL >> 12) & 3;
 
-    my $speed;
-    if ($speed_num == 4) { $speed = "Super speed gen1 $lane"; }
-    elsif ($speed_num == 5) { $speed = "Super speed gen2 $lane"; }
-    elsif ($speed_num == 0) { $speed = "High speed"; }
-    elsif ($speed_num == 1) { $speed = "Full speed"; }
-    elsif ($speed_num == 2) { $speed = "Low speed"; }
-    elsif ($speed_num == 3) { $speed = "Full speed"; }
-    else { $speed = "Unknown"; }
+    my $state_num;
+    my $state = "Unknown";
 
-    my $num = $GDBGLTSSM;
-    $num = $num & 0x03C00000;
-    $num = ($num >> 22) ;
+    my $speed_num = 4; # default to SuperSpeed
+    my $speed = "Unknown";
 
-    my $state;
-    if ($speed_num < 4) {
-    if ($num == 0) { $state = "On"; }
-        elsif ($num == 2) { $state = "Sleep L1"; }
-        elsif ($num == 3) { $state = "Suspend L2"; }
-        elsif ($num == 4) { $state = "Disconnected"; }
-        elsif ($num == 5) { $state = "Early Suspend"; }
-        elsif ($num == 14) { $state = "Reset"; }
-        elsif ($num == 15) { $state = "Resume"; }
-        else { $state = "Unknown"; }
+    if ($hw_mode == 0 || ($hw_mode == 2 && $prtcapdir == 2)) {
+        # Find device speed
+        my $DSTS = rreg(0xc70c);
+        my $lane = ($DSTS & (1 << 30)) ? "2-lane" : "1-lane";
+
+        $state_num = ($DSTS >> 18) & 0xf;
+        $speed_num = $DSTS & 7;
+
+        if ($speed_num == 4) { $speed = "Super speed gen1 $lane"; }
+        elsif ($speed_num == 5) { $speed = "Super speed gen2 $lane"; }
+        elsif ($speed_num == 0) { $speed = "High speed"; }
+        elsif ($speed_num == 1) { $speed = "Full speed"; }
+        elsif ($speed_num == 2) { $speed = "Low speed"; }
+        elsif ($speed_num == 3) { $speed = "Full speed"; }
     } else {
-        if ($num == 0) { $state = "U0"; }
-        elsif ($num == 1) { $state = "U1"; }
-        elsif ($num == 2) { $state = "U2"; }
-        elsif ($num == 3) { $state = "U3"; }
-        elsif ($num == 4) { $state = "SS_disable"; }
-        elsif ($num == 5) { $state = "Rx_Detect "; }
-        elsif ($num == 6) { $state = "SS_Inactive"; }
-        elsif ($num == 7) { $state = "Poll"; }
-        elsif ($num == 8) { $state = "Recov"; }
-        elsif ($num == 9) { $state = "HReset"; }
-        elsif ($num == 10) { $state = "Compliance"; }
-        elsif ($num == 11) { $state = "Loopback"; }
-        else { $state = "Unknown"; }
+        $state_num = ($GDBGLTSSM >> 22) & 0xf;
     }
-    my $link_state = sprintf "0x%02x", $num;
 
-    $num = $GDBGLTSSM & 0x3C0000;
-    my $sublink_state = sprintf "0x%02x", $num >> 18;
+    my $sublink_state = "n/a";
+    my $link_state = sprintf "0x%02x", $state_num;
+
+    if ($speed_num > 3) {
+        $sublink_state = sprintf "0x%02x", ($GDBGLTSSM >> 18) & 0xf;
+
+        if ($state_num == 0) { $state = "U0"; }
+        elsif ($state_num == 1) { $state = "U1"; }
+        elsif ($state_num == 2) { $state = "U2"; }
+        elsif ($state_num == 3) { $state = "U3"; }
+        elsif ($state_num == 4) { $state = "SS_disable"; }
+        elsif ($state_num == 5) { $state = "Rx_Detect "; }
+        elsif ($state_num == 6) { $state = "SS_Inactive"; }
+        elsif ($state_num == 7) { $state = "Poll"; }
+        elsif ($state_num == 8) { $state = "Recov"; }
+        elsif ($state_num == 9) { $state = "HReset"; }
+        elsif ($state_num == 10) { $state = "Compliance"; }
+        elsif ($state_num == 11) { $state = "Loopback"; }
+    } else {
+        if ($state_num == 0) { $state = "On"; }
+        elsif ($state_num == 2) { $state = "Sleep L1"; }
+        elsif ($state_num == 3) { $state = "Suspend L2"; }
+        elsif ($state_num == 4) { $state = "Disconnected"; }
+        elsif ($state_num == 5) { $state = "Early Suspend"; }
+        elsif ($state_num == 14) { $state = "Reset"; }
+        elsif ($state_num == 15) { $state = "Resume"; }
+    }
 
     #Find MPHY state
     my $GUSB3RMMICTL = rreg(0xc1c0);
-    $num = ($GUSB3RMMICTL & 0x0E000000) >> 25;
-    my $mphy_state_num = $num;
+    my $mphy_state_num = ($GUSB3RMMICTL >> 25) & 0x7;
 
     my $mphy_state;
 
-    if ($num == 0) { $mphy_state = "disable"; }
-    elsif ($num == 1) { $mphy_state = "hibern8"; }
-    elsif ($num == 2) { $mphy_state = "sleep  "; }
-    elsif ($num == 3) { $mphy_state = "STALL"; }
-    elsif ($num == 4) { $mphy_state = "PWM_burst"; }
-    elsif ($num == 5) { $mphy_state = "HS-BURST"; }
-    elsif ($num == 6) { $mphy_state = "line_cfg"; }
-    elsif ($num == 7) { $mphy_state = "line_reset"; }
+    if ($mphy_state_num == 0) { $mphy_state = "disable"; }
+    elsif ($mphy_state_num == 1) { $mphy_state = "hibern8"; }
+    elsif ($mphy_state_num == 2) { $mphy_state = "sleep  "; }
+    elsif ($mphy_state_num == 3) { $mphy_state = "STALL"; }
+    elsif ($mphy_state_num == 4) { $mphy_state = "PWM_burst"; }
+    elsif ($mphy_state_num == 5) { $mphy_state = "HS-BURST"; }
+    elsif ($mphy_state_num == 6) { $mphy_state = "line_cfg"; }
+    elsif ($mphy_state_num == 7) { $mphy_state = "line_reset"; }
     else { $mphy_state = "Unknown"; }
 
     print <<"DWC_INFO"
