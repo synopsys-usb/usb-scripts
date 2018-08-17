@@ -28,6 +28,7 @@ USAGE_EOF
 sub print_status {
     my $snpsid = shift;
     my $GDBGLTSSM;
+    my $rtl_ver;
 
     my $ver_num = rreg(0xc1a0);
     my $ver_num_ascii = pack "N*", $ver_num;
@@ -37,10 +38,10 @@ sub print_status {
         $GDBGLTSSM = rreg(0xd050);
         my $ver_type = rreg(0xc1a4);
         my $ver_type_ascii = pack "N*", $ver_type;
-        print "RTL Version: $ver_num_ascii-$ver_type_ascii\n";
+        $rtl_ver = "$ver_num_ascii-$ver_type_ascii";
     } else {
         $GDBGLTSSM = rreg(0xc164);
-        print "RTL Version: $ver_num_ascii\n";
+        $rtl_ver = "$ver_num_ascii";
     }
 
     my $GHWPARAMS0 = rreg(0xc140);
@@ -50,7 +51,6 @@ sub print_status {
     if ($hw_mode == 0) { $hw_mode_name = "device" }
     elsif ($hw_mode == 1) { $hw_mode_name = "host" }
     elsif ($hw_mode == 2) { $hw_mode_name = "drd" }
-    print "HW mode: $hw_mode_name\n";
 
     my $num = $GDBGLTSSM;
     $num = $num & 0x03C00000;
@@ -70,11 +70,10 @@ sub print_status {
     elsif ($num == 10) { $state = "Compliance"; }
     elsif ($num == 11) { $state = "Loopback"; }
     else { $state = "Unknown"; }
-    printf "LinkState = $state (0x%02x)\n", $num;
+    my $link_state = sprintf "0x%02x", $num;
 
     $num = $GDBGLTSSM & 0x3C0000;
-    $num = $num >> 18;
-    printf("Sub LinkState = %x\n", $num);
+    my $sublink_state = sprintf "0x%02x", $num >> 18;
 
     # Find device speed
     my $DSTS = rreg(0xc70c);
@@ -89,12 +88,11 @@ sub print_status {
     elsif ($num == 2) { $speed = "Low speed"; }
     elsif ($num == 3) { $speed = "Full speed"; }
     else { $speed = "Unknown"; }
-    print "Speed: $speed\n";
 
     #Find MPHY state
     my $GUSB3RMMICTL = rreg(0xc1c0);
-    print "GUSB3RMMICTL = $GUSB3RMMICTL\n";
     $num = ($GUSB3RMMICTL & 0x0E000000) >> 25;
+    my $mphy_state_num = $num;
 
     my $mphy_state;
 
@@ -107,8 +105,17 @@ sub print_status {
     elsif ($num == 6) { $mphy_state = "line_cfg"; }
     elsif ($num == 7) { $mphy_state = "line_reset"; }
     else { $mphy_state = "Unknown"; }
-    printf "MPHY State = $mphy_state (0x%02x)\n", $num;
-    print "\n";
+
+    print <<"DWC_INFO"
+    RTL Version:   $rtl_ver
+    HW Mode:       $hw_mode_name
+    LinkState:     $state ($link_state)
+    Sub LinkState: $sublink_state
+    Speed:         $speed
+    GUSB3RMMICTL:  $GUSB3RMMICTL
+    MPHY State:    $mphy_state ($mphy_state_num)
+
+DWC_INFO
 }
 
 sub print_ep {
