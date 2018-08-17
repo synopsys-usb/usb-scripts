@@ -52,42 +52,53 @@ sub print_status {
     elsif ($hw_mode == 1) { $hw_mode_name = "host" }
     elsif ($hw_mode == 2) { $hw_mode_name = "drd" }
 
+    # Find device speed
+    my $DSTS = rreg(0xc70c);
+    my $lane = ($DSTS & (1 << 30)) ? "2-lane" : "1-lane";
+    my $speed_num = $DSTS & 7;
+
+    my $speed;
+    if ($speed_num == 4) { $speed = "Super speed gen1 $lane"; }
+    elsif ($speed_num == 5) { $speed = "Super speed gen2 $lane"; }
+    elsif ($speed_num == 0) { $speed = "High speed"; }
+    elsif ($speed_num == 1) { $speed = "Full speed"; }
+    elsif ($speed_num == 2) { $speed = "Low speed"; }
+    elsif ($speed_num == 3) { $speed = "Full speed"; }
+    else { $speed = "Unknown"; }
+
     my $num = $GDBGLTSSM;
     $num = $num & 0x03C00000;
     $num = ($num >> 22) ;
 
     my $state;
-    if ($num == 0) { $state = "U0"; }
-    elsif ($num == 1) { $state = "U1"; }
-    elsif ($num == 2) { $state = "U2"; }
-    elsif ($num == 3) { $state = "U3"; }
-    elsif ($num == 4) { $state = "SS_disable"; }
-    elsif ($num == 5) { $state = "Rx_Detect "; }
-    elsif ($num == 6) { $state = "SS_Inactive"; }
-    elsif ($num == 7) { $state = "Poll"; }
-    elsif ($num == 8) { $state = "Recov"; }
-    elsif ($num == 9) { $state = "HReset"; }
-    elsif ($num == 10) { $state = "Compliance"; }
-    elsif ($num == 11) { $state = "Loopback"; }
-    else { $state = "Unknown"; }
+    if ($speed_num < 4) {
+    if ($num == 0) { $state = "On"; }
+        elsif ($num == 2) { $state = "Sleep L1"; }
+        elsif ($num == 3) { $state = "Suspend L2"; }
+        elsif ($num == 4) { $state = "Disconnected"; }
+        elsif ($num == 5) { $state = "Early Suspend"; }
+        elsif ($num == 14) { $state = "Reset"; }
+        elsif ($num == 15) { $state = "Resume"; }
+        else { $state = "Unknown"; }
+    } else {
+        if ($num == 0) { $state = "U0"; }
+        elsif ($num == 1) { $state = "U1"; }
+        elsif ($num == 2) { $state = "U2"; }
+        elsif ($num == 3) { $state = "U3"; }
+        elsif ($num == 4) { $state = "SS_disable"; }
+        elsif ($num == 5) { $state = "Rx_Detect "; }
+        elsif ($num == 6) { $state = "SS_Inactive"; }
+        elsif ($num == 7) { $state = "Poll"; }
+        elsif ($num == 8) { $state = "Recov"; }
+        elsif ($num == 9) { $state = "HReset"; }
+        elsif ($num == 10) { $state = "Compliance"; }
+        elsif ($num == 11) { $state = "Loopback"; }
+        else { $state = "Unknown"; }
+    }
     my $link_state = sprintf "0x%02x", $num;
 
     $num = $GDBGLTSSM & 0x3C0000;
     my $sublink_state = sprintf "0x%02x", $num >> 18;
-
-    # Find device speed
-    my $DSTS = rreg(0xc70c);
-    my $lane = ($DSTS & (1 << 30)) ? "2-lane" : "1-lane";
-    $num = $DSTS & 7;
-
-    my $speed;
-    if ($num == 4) { $speed = "Super speed gen1 $lane"; }
-    elsif ($num == 5) { $speed = "Super speed gen2 $lane"; }
-    elsif ($num == 0) { $speed = "High speed"; }
-    elsif ($num == 1) { $speed = "Full speed"; }
-    elsif ($num == 2) { $speed = "Low speed"; }
-    elsif ($num == 3) { $speed = "Full speed"; }
-    else { $speed = "Unknown"; }
 
     #Find MPHY state
     my $GUSB3RMMICTL = rreg(0xc1c0);
