@@ -29,10 +29,18 @@ sub print_status {
     my $snpsid = shift;
     my $GDBGLTSSM;
 
+    my $ver_num = rreg(0xc1a0);
+    my $ver_num_ascii = pack "N*", $ver_num;
+    $ver_num_ascii =~ s/(\d)(.*?)\*?$/$1.$2a/;
+
     if ($snpsid == 0x3331) {
         $GDBGLTSSM = rreg(0xd050);
+        my $ver_type = rreg(0xc1a4);
+        my $ver_type_ascii = pack "N*", $ver_type;
+        print "RTL Version: $ver_num_ascii-$ver_type_ascii\n";
     } else {
         $GDBGLTSSM = rreg(0xc164);
+        print "RTL Version: $ver_num_ascii\n";
     }
 
     my $GHWPARAMS0 = rreg(0xc140);
