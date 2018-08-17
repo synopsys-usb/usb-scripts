@@ -91,9 +91,9 @@ sub status {
             $head_commit = $2;
             print "HEAD commit is $cur_commit\n";
             print "Remote $branch commit is $head_commit\n\n";
-            print "Repo is NOT up-to-date\n\n";
+            print "Branch $branch is NOT up-to-date\n\n";
         } else {
-            print "Repo is up-to-date\n\n";
+            print "Branch $branch is up-to-date\n\n";
             print $output;
         }
     } else {
