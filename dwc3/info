@@ -158,16 +158,7 @@ sub main {
     }
 
     if (!@ARGV) {
-        # Check if driver is loaded
         print "\n";
-        my $tmp;
-
-        cmd("lsmod", \$tmp) or die;
-        if ($tmp =~ /dwc3\b/) {
-            print "Driver is loaded\n";
-        } else {
-            print "Driver is NOT loaded\n";
-        }
 
         print_status($snpsid);
         exit(0);
