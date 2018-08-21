@@ -26,22 +26,30 @@ USAGE_EOF
 }
 
 sub print_status {
-    my $snpsid = shift;
+    my $snpsid = rreg(0xc120);
+    my $is_usb31 = ($snpsid >> 16 == 0x3331) ? 1 : 0;
+    my $is_usb3 = ($snpsid >> 16 == 0x5533) ? 1 : 0;
+
     my $GDBGLTSSM;
-    my $rtl_ver;
+    my $rtl_ver = "Unknown";
 
-    my $ver_num = rreg(0xc1a0);
-    my $ver_num_ascii = pack "N*", $ver_num;
-    $ver_num_ascii =~ s/(\d)(.*?)\*?$/$1.$2a/;
-
-    if ($snpsid == 0x3331) {
+    if ($is_usb31) {
         $GDBGLTSSM = rreg(0xd050);
+
+        my $ver_num = rreg(0xc1a0);
+        my $ver_num_ascii = pack "N*", $ver_num;
+        $ver_num_ascii =~ s/(\d)(.*?)\*?$/$1.$2a/;
+
         my $ver_type = rreg(0xc1a4);
         my $ver_type_ascii = pack "N*", $ver_type;
-        $rtl_ver = "$ver_num_ascii-$ver_type_ascii";
-    } else {
+        $rtl_ver = "dwc_usb31 v$ver_num_ascii-$ver_type_ascii";
+    } elsif ($is_usb3) {
         $GDBGLTSSM = rreg(0xc164);
-        $rtl_ver = "$ver_num_ascii";
+
+        my $ver_num = $snpsid & 0xffff;
+        my $ver_num_ascii = sprintf "%x", $ver_num;
+        $ver_num_ascii =~ s/(\d)(.*)/$1.$2/;
+        $rtl_ver = "dwc_usb3 v$ver_num_ascii";
     }
 
     my $GHWPARAMS0 = rreg(0xc140);
@@ -175,16 +183,10 @@ sub main {
     # Check if PCIe device is in PCI bus
     base();
 
-    # Check if device ID is correct
-    my $snpsid = rreg(0xc120) >> 16;
-    if (($snpsid != 0x5533) && ($snpsid != 0x3331)) {
-        die sprintf("Error: Wrong device ID %04x\n", $snpsid);
-    }
-
     if (!@ARGV) {
         print "\n";
 
-        print_status($snpsid);
+        print_status();
         exit(0);
     } else {
         my $debugfs;
