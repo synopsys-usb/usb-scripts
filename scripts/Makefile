@@ -14,6 +14,7 @@ install_other:
 	@$(INSTALL) 0644 $(INSTALL_DIR) $(PERL_MODULES) $(OTHER)
 
 make_links:
+	@ln -fs $(DWC_LIB_DIR)/dwc.pl $(INSTALL_DIR)/xhci
 	@ln -fs $(DWC_LIB_DIR)/dwc.pl $(INSTALL_DIR)/dwc3-xhci
 	@ln -fs $(DWC_LIB_DIR)/dwc.pl $(INSTALL_DIR)/dwc3
 	@ln -fs $(DWC_LIB_DIR)/dwc.pl $(INSTALL_DIR)/dwc2

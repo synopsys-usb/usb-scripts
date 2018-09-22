@@ -55,6 +55,11 @@ __complete_dwc3()
     fi
 }
 
+__complete_xhci()
+{
+    COMPREPLY=( `echo -n "$COMP_LINE" | xhci completion` )
+}
+
 __complete_dwc3_xhci()
 {
     COMPREPLY=( `echo -n "$COMP_LINE" | dwc3-xhci completion` )
@@ -65,4 +70,6 @@ complete -F __complete_audio audio
 complete -F __complete_typec typec
 complete -F __complete_dwc2 dwc2
 complete -F __complete_dwc3 dwc3
+complete -F __complete_xhci xhci
 complete -F __complete_dwc3_xhci dwc3-xhci
+

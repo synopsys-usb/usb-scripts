@@ -15,7 +15,11 @@ my $DWC_SCRIPT = 0;
 sub initialize {
     if ($0 =~ m/^(.*)\/(.*?)$/) {
         $SCRIPT_DIR = fast_abs_path($1);
-        $SCRIPT = $2;
+        if ($2 eq "xhci") {
+            $SCRIPT = "dwc3-xhci";
+        } else {
+            $SCRIPT = $2;
+        }
     }
 
     my $file = __FILE__;
@@ -25,7 +29,7 @@ sub initialize {
     }
 
     if (@ARGV) {
-        if ($ARGV[-1] =~ m/type=(haps$|typec$|dwc2$|dwc3$|dwc3\-xhci$)/) {
+        if ($ARGV[-1] =~ m/type=(haps$|typec$|dwc2$|dwc3$|(?:dwc3\-)?xhci$)/) {
             $TYPE = $1;
             $DWC_SCRIPT = 1;
             pop @ARGV;
