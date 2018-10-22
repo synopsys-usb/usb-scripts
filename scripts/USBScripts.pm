@@ -177,6 +177,7 @@ sub kver {
 }
 
 my $_BASE;
+my $_PCI_BUS;
 
 my $PCI_PIDS = {
     "abc0" => "dwc2",
@@ -190,10 +191,18 @@ my $PCI_PIDS = {
 };
 
 #
-# Returns the base address of the controller
+# Returns the base address or bus domain of the controller
+#
+# arg1: Set to return PCI bus domain. Otherwise return base address
 #
 sub base {
-    if (defined $_BASE) {
+    my $get_bus = shift;
+
+    if (defined $get_bus and defined $_PCI_BUS) {
+        return $_PCI_BUS;
+    }
+
+    if (!defined $get_bus and defined $_BASE) {
         return $_BASE;
     }
 
@@ -204,19 +213,22 @@ sub base {
     } elsif (plat_is_x86()) {
         my $pci;
 
-        _cmd("lspci -n -d 16c3:", \$pci)
+        _cmd("lspci -D -n -d 16c3:", \$pci)
             or die("Couldn't examine PCI bus, check lspci\n");
 
+        my @pci_bus;
         my @ids;
 
-        while ($pci =~ m/16c3\:([\da-fA-f]+)/g) {
-            push @ids, $1;
+        while ($pci =~ m/^(\d+:\d+:\d+\.\d).*16c3\:([\da-fA-f]+)/g) {
+            push @pci_bus, $1;
+            push @ids, $2;
         }
 
-	if (!@ids) {
-	    die("No controllers found.\n");
-	}
+        if (!@ids) {
+            die("No controllers found.\n");
+        }
 
+        $_PCI_BUS = $pci_bus[0];
         my $id = $ids[0];
         for (@ids) {
             if (defined ($TYPE) && exists $PCI_PIDS->{$_} && ($TYPE eq $PCI_PIDS->{$_})) {
@@ -249,6 +261,9 @@ sub base {
             _cmd("sudo setpci -d 16c3:$id COMMAND=$pci_cmd");
         }
 
+        if (defined $get_bus) {
+            return $_PCI_BUS;
+        }
     } else {
         my $plat = plat();
         die("Unknown platform $plat\n");
@@ -334,6 +349,12 @@ sub unload {
         rmmod("udc_core");
         rmmod("snps_phy_tc");
         rmmod("phy_generic");
+        if (plat_is_x86()) {
+            my $pci_bus = base(1);
+            if (-d "/sys/bus/pci/devices/$pci_bus/driver") {
+                write_file("/sys/bus/pci/devices/$pci_bus/driver/unbind", $pci_bus);
+            }
+        }
     }
 }
 
