@@ -156,8 +156,8 @@ sub print_ep {
 
     cmd("cat $debugfs/$ep/descriptor_fetch_queue", \$desc_fetch_q);
     cmd("cat $debugfs/$ep/event_queue", \$event_q);
-    cmd("cat $debugfs/$ep/rx_fifo_queue", \$rx_fifo_q);
-    cmd("cat $debugfs/$ep/tx_fifo_queue", \$tx_fifo_q);
+    cmd("cat $debugfs/$ep/rx_fifo_size", \$rx_fifo_q);
+    cmd("cat $debugfs/$ep/tx_fifo_size", \$tx_fifo_q);
     cmd("cat $debugfs/$ep/rx_info_queue", \$rx_info_q);
     #cmd("cat $debugfs/$ep/tx_info_queue", \$tx_info_q);
 
@@ -172,8 +172,8 @@ sub print_ep {
 ## $ep
 desc_fetch_queue = $event_q
 event_queue      = $event_q
-rx_fifo_queue    = $rx_fifo_q
-tx_fifo_queue    = $tx_fifo_q
+rx_fifo_size     = $rx_fifo_q
+tx_fifo_size     = $tx_fifo_q
 rx_info_queue    = $rx_info_q
 =============================
 EP_INFO
