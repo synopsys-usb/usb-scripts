@@ -360,7 +360,7 @@ sub unload {
 
 sub enable_trace {
     if ($TYPE eq "dwc3") {
-        write_file("/sys/kernel/debug/tracing/buffer_size_kb", "4096") or die;
+        write_file("/sys/kernel/debug/tracing/buffer_size_kb", "16304") or die;
         write_file("/sys/kernel/debug/tracing/events/dwc3/enable", "1") or die;
     } elsif ($TYPE eq "dwc3-xhci") {
         write_file("/sys/kernel/debug/tracing/buffer_size_kb", "4096") or die;
@@ -423,6 +423,26 @@ sub validate_hex {
         return 1;
     }
     return 0;
+}
+
+# Check if the device is in suspended mode
+sub is_enabled {
+    if (defined $_BASE_2) {
+        my $value;
+        my $is_enabled;
+        my $r4 = $_BASE_2 + 0x10;
+
+        my $cmd = sprintf("$LIB_DIR/rdmem %x", $r4);
+        _cmd($cmd, \$value) or (print "Can't read mem region 2\n" and return 1);
+        chomp($value);
+
+        $is_enabled = (((hex($value) & (0x3 << 4)) == 0) &&
+            ((hex($value) & 0x3) == 0)) ? 1 : 0;
+
+        return $is_enabled;
+    }
+
+    return 1;
 }
 
 sub parse_bitfield {
@@ -521,6 +541,7 @@ our @EXPORT = qw($BIN_DIR $LIB_DIR $SCRIPT_DIR $SCRIPT $TYPE rreg
 wreg run_as_root plat_is_x86 plat_is_arc plat_is_juno typec_debugfs
 dwc3_debugfs dwc2_debugfs dwc2_pci_debugfs rmmod validate_hex
 parse_bitfield genmask description no_options read_file write_file
-cmd autodie base initram unload enable_trace dwc3_pci_debugfs);
+cmd autodie base initram unload enable_trace dwc3_pci_debugfs
+is_enabled);
 
 1;

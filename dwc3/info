@@ -183,6 +183,8 @@ sub main {
     # Check if PCIe device is in PCI bus
     base();
 
+    die "Controller is in suspended state (U3/L2)\n" if !is_enabled();
+
     if (!@ARGV) {
         print "\n";
 
