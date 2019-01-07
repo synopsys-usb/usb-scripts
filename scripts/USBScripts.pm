@@ -177,6 +177,7 @@ sub kver {
 }
 
 my $_BASE;
+my $_BASE_2;
 my $_PCI_BUS;
 
 my $PCI_PIDS = {
@@ -243,15 +244,14 @@ sub base {
         _cmd("lspci -v -d 16c3:$id", \$pci)
             or die("Couldn't examine PCI bus.\n");
 
-        if (defined ($TYPE) && $TYPE eq "typec") {
-            if ($pci =~ /Memory at ([\da-fA-F]+) \(32.*/) {
-                $_BASE = hex($1);
-            }
-        } elsif ($pci =~ /Memory at ([\da-fA-F]+) .*/) {
-            $_BASE = hex($1);
-        } else {
-            die("Controller for $TYPE not found. Check lspci.\n");
-        }
+        my $addr;
+        _cmd("setpci -d 16c3:$id BASE_ADDRESS_0", \$addr);
+        chomp($addr);
+        $_BASE = hex($addr) & 0xffff0000;
+
+        _cmd("setpci -d 16c3:$id BASE_ADDRESS_2", \$addr);
+        chomp($addr);
+        $_BASE_2 = hex($addr) & 0xffff0000;
 
         my $pci_cmd;
         _cmd("setpci -d 16c3:$id COMMAND", \$pci_cmd);
