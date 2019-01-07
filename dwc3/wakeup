@@ -1,0 +1,17 @@
+#!/usr/bin/perl
+
+use strict;
+
+description("Wakeup suspended controller");
+run_as_root();
+
+sub main {
+    if (plat_is_x86()) {
+        my $debugfs = dwc3_debugfs();
+        if (defined $debugfs and -e "$debugfs/wakeup") {
+            cmd("echo > $debugfs/wakeup");
+        }
+    }
+}
+
+main();
