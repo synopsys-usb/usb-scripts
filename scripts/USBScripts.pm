@@ -354,11 +354,20 @@ sub unload {
             if (-d "/sys/bus/pci/devices/$pci_bus/driver") {
                 write_file("/sys/bus/pci/devices/$pci_bus/driver/unbind", $pci_bus);
             }
+
+            if (!is_enabled()) {
+                pmu_request("d0");
+            }
         }
     }
 }
 
 sub enable_trace {
+    if (! -e "/sys/kernel/debug/tracing") {
+        print "Tracing is not enabled\n";
+        return;
+    }
+
     if ($TYPE eq "dwc3") {
         write_file("/sys/kernel/debug/tracing/buffer_size_kb", "16304") or die;
         write_file("/sys/kernel/debug/tracing/events/dwc3/enable", "1") or die;
@@ -443,6 +452,23 @@ sub is_enabled {
     }
 
     return 1;
+}
+
+# Enable/disable controller PMU
+sub pmu_request {
+    my $request = shift;
+
+    if (defined $_BASE_2) {
+        my $r1 = $_BASE_2 + 0x4;
+        my $d0_request = 0 << 12;
+        my $d3_request = 3 << 12;
+        my $cmd;
+
+        $cmd = sprintf("$LIB_DIR/wrmem %x %x", $r1,
+            ($request eq "d3") ?  $d3_request : $d0_request);
+
+        _cmd($cmd) or (print "Can't write mem region 2\n" and return);
+    }
 }
 
 sub parse_bitfield {
