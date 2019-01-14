@@ -212,18 +212,19 @@ sub base {
     } elsif (plat_is_arc()) {
         $_BASE = 0xd0000000;
     } elsif (plat_is_x86()) {
-        my $pci;
-
-        _cmd("lspci -D -n -d 16c3:", \$pci)
-            or die("Couldn't examine PCI bus, check lspci\n");
-
         my @pci_bus;
         my @ids;
+        my $pci;
 
-        while ($pci =~ m/^(\d+:\d+:\d+\.\d).*16c3\:([\da-fA-f]+)/g) {
-            push @pci_bus, $1;
-            push @ids, $2;
-        }
+        _cmd("setpci -d 16c3: DEVICE_ID", \@ids)
+            or die("Couldn't examine PCI bus\n");
+
+        chomp @ids;
+
+        _cmd("lspci -D -n -d 16c3: | awk '{ print \$1 }'", \@pci_bus)
+            or die("Couldn't examine PCI bus, check lspci\n");
+
+        chomp @pci_bus;
 
         if (!@ids) {
             die("No controllers found.\n");
