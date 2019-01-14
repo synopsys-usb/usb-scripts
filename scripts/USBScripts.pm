@@ -241,9 +241,6 @@ sub base {
             die("Controller for $TYPE not found. Check lspci.\n");
         }
 
-        _cmd("lspci -v -d 16c3:$id", \$pci)
-            or die("Couldn't examine PCI bus.\n");
-
         my $addr;
         _cmd("setpci -d 16c3:$id BASE_ADDRESS_0", \$addr);
         chomp($addr);
