@@ -67,7 +67,7 @@ sub set_properties {
 }
 
 sub main {
-    my $arg = shift @ARGV;
+    my $arg = $ARGV[0];
 
     if ($arg eq "completion") {
         do_completion();
@@ -83,6 +83,16 @@ sub main {
             my $debugfs = dwc3_pci_debugfs();
             if (defined $debugfs) {
                 set_properties($debugfs);
+                for (@ARGV) {
+                    my ($param, $value) = /^(.+)=(.+)/;
+
+                    next if (!defined $param or !defined $value);
+
+                    system("(echo $value > $debugfs/$param) 2> /dev/null");
+                    if ($? != 0) {
+                        print("Invalid param $param or value $value\n");
+                    }
+                }
                 cmd("echo > $debugfs/start");
             }
         }
