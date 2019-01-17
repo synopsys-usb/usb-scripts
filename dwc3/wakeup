@@ -2,7 +2,7 @@
 
 use strict;
 
-description("Wakeup suspended controller");
+description("Request remote wakeup");
 run_as_root();
 
 sub main {
@@ -10,6 +10,8 @@ sub main {
         my $debugfs = dwc3_debugfs();
         if (defined $debugfs and -e "$debugfs/wakeup") {
             cmd("echo > $debugfs/wakeup");
+        } else {
+            die("Remote wakeup is not available\n");
         }
     }
 }
