@@ -1,5 +1,5 @@
 INSTALL_DIR := $(INSTALL_DIR)/dwc3_commands
-SCRIPTS := load info wakeup
+SCRIPTS := load info wakeup params
 
 install:
 	@$(INSTALL) 0755 $(INSTALL_DIR) $(SCRIPTS)
