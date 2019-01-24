@@ -6,6 +6,6 @@ description("Print dwc3 driver parameters");
 no_options();
 run_as_root();
 
-my $debug =  dwc3_pci_debugfs() or die "No debugfs";
+my $debug =  dwc3_pci_debugfs() or print "Not Available\n" and exit(0);
 
 cmd("cat $debug/params") or die;
