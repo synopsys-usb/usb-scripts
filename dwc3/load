@@ -41,29 +41,44 @@ sub do_completion {
 }
 
 sub set_properties {
-    my $debugfs = shift;
+    my @options = @_;
+    my %properties;
+    my $debugfs = dwc3_pci_debugfs();
     my $file = "$ENV{HOME}/dwc3_params.txt";
-    my $param;
-    my $val;
 
-    open(my $fh, '<', $file) or return;
+    return if (!defined $debugfs);
 
+    open(my $fh, '<', $file) or goto SKIP;
     while (my $row = <$fh>) {
         chomp $row;
         if ($row =~ m/^(.+)=(.+)/) {
-            $param = $1;
-            $val = $2;
+            $properties{$1} = $2;
         } else {
-            die("Invalid config line\n$row\n\n");
-        }
-
-        print ("$param = $val\n");
-
-        system("(echo $val > $debugfs/$param) 2> /dev/null");
-        if ($? != 0) {
-            print("Invalid param $param or value $val\n");
+            print("Invalid config line\n$row\n\n");
+            next;
         }
     }
+
+    SKIP:
+
+    for (@options) {
+        my ($param, $value) = /^(.+)=(.+)/;
+
+        next if (!defined $param or !defined $value);
+
+        $properties{$1} = $2;
+    }
+
+    for my $param (keys %properties) {
+        print ("$param = $properties{$param}\n");
+
+        system("(echo $properties{$param} > $debugfs/$param) 2> /dev/null");
+        if ($? != 0) {
+            print("Invalid param $param or value $properties{$param}\n");
+        }
+    }
+
+    cmd("echo > $debugfs/start");
 }
 
 sub main {
@@ -80,21 +95,7 @@ sub main {
         if (system("modprobe -q dwc3_haps")) {
             cmd("modprobe dwc3_pci");
         } else {
-            my $debugfs = dwc3_pci_debugfs();
-            if (defined $debugfs) {
-                set_properties($debugfs);
-                for (@ARGV) {
-                    my ($param, $value) = /^(.+)=(.+)/;
-
-                    next if (!defined $param or !defined $value);
-
-                    system("(echo $value > $debugfs/$param) 2> /dev/null");
-                    if ($? != 0) {
-                        print("Invalid param $param or value $value\n");
-                    }
-                }
-                cmd("echo > $debugfs/start");
-            }
+            set_properties(@ARGV);
         }
     }
 
