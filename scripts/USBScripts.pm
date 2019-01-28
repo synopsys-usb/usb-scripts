@@ -249,7 +249,7 @@ sub base {
 
         _cmd("setpci -d 16c3:$id BASE_ADDRESS_2", \$addr);
         chomp($addr);
-        $_BASE_2 = hex($addr) & 0xffff0000;
+        $_BASE_2 = hex($addr) & 0xfffff000;
 
         my $pci_cmd;
         _cmd("setpci -d 16c3:$id COMMAND", \$pci_cmd);
