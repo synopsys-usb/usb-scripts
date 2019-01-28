@@ -1,0 +1,11 @@
+#!/usr/bin/perl
+
+use strict;
+
+description("Clear tracepoint");
+no_options();
+run_as_root();
+
+my $trace_dir = "/sys/kernel/debug/tracing/trace";
+
+system("echo > $trace_dir") if (-e $trace_dir);
