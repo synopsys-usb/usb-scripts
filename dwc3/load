@@ -69,12 +69,12 @@ sub set_properties {
         $properties{$1} = $2;
     }
 
-    for my $param (keys %properties) {
-        print ("$param = $properties{$param}\n");
-
+    for my $param (sort keys %properties) {
         system("(echo $properties{$param} > $debugfs/$param) 2> /dev/null");
         if ($? != 0) {
-            print("Invalid param $param or value $properties{$param}\n");
+            print(">> Invalid param \"$param\" or value \"$properties{$param}\"\n");
+        } else {
+            print ("$param = $properties{$param}\n");
         }
     }
 
