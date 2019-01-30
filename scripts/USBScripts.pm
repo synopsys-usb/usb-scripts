@@ -366,14 +366,16 @@ sub enable_trace {
         return;
     }
 
+    my $trace_buf_size = "98304";
+
     if ($TYPE eq "dwc3") {
-        write_file("/sys/kernel/debug/tracing/buffer_size_kb", "16304") or die;
+        write_file("/sys/kernel/debug/tracing/buffer_size_kb", $trace_buf_size) or die;
         write_file("/sys/kernel/debug/tracing/events/dwc3/enable", "1") or die;
     } elsif ($TYPE eq "dwc3-xhci") {
-        write_file("/sys/kernel/debug/tracing/buffer_size_kb", "4096") or die;
+        write_file("/sys/kernel/debug/tracing/buffer_size_kb", $trace_buf_size) or die;
         write_file("/sys/kernel/debug/tracing/events/xhci-hcd/enable", "1") or die;
     } elsif ($TYPE eq "dwc2") {
-        write_file("/sys/kernel/debug/tracing/buffer_size_kb", "4096") or die;
+        write_file("/sys/kernel/debug/tracing/buffer_size_kb", $trace_buf_size) or die;
         write_file("/sys/kernel/debug/tracing/events/dwc2/enable", "1") or die;
     }
 }
