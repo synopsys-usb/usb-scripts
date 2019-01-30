@@ -26,6 +26,9 @@ For example:
 To sync with Thinh's 'typec' branch
     \$ repo sync thinh typec
 
+To sync with 'typec' branch without specifying owner's
+    \$ repo sync typec
+
 To show status of the current repo of 'next' branch
     \$ repo status thinh next
 
@@ -39,12 +42,51 @@ USAGE_EOF
     exit $exit_code;
 }
 
+sub select_owner {
+    my @remote_v;
+    my %remote_list;
+    my $num;
+
+    cmd("git remote -v", \@remote_v);
+
+    if (scalar @remote_v == 0) {
+        print "No remote repo found\n";
+        return;
+    }
+
+    for (@remote_v) {
+        my ($name, $url) = /^(.+)\s(.+)\s\(fetch\)/;
+        next if (!defined $name);
+
+        $remote_list{$1} = $2;
+    }
+
+    my @id_list = sort keys %remote_list;
+
+    SELECT:
+    print "Select remote repo:\n";
+    my $count = 1;
+    for (@id_list) {
+        print "$count) $_\t$remote_list{$_}\n";
+        $count++;
+    }
+
+    print "Select: ";
+    $num = <STDIN>;
+    if (($num !~ m/\d+/) || ($num >= $count) || ($num <= 0)) {
+        print "Please provide a valid number\n\n";
+        goto SELECT;
+    }
+
+    $PROJ_ID = $id_list[$num - 1];
+}
+
 sub init {
     my $owner = shift;
 
     if (!defined $owner) {
-        print "Please provide repo owner's name\n";
-        exit 1;
+        select_owner();
+        return;
     }
 
     my $usr;
@@ -63,7 +105,7 @@ sub init {
         $PROJ_ID = $1;
     } else {
         print "Repo from $owner is not found\n";
-        exit 1;
+        select_owner();
     }
 }
 
@@ -168,11 +210,21 @@ sub clone {
 }
 
 sub main {
-    my $command = shift @ARGV;
-    my $owner = shift @ARGV;
-    my $branch = shift @ARGV;
+
+    my $command = $ARGV[0];
+    my $owner;
+    my $branch;
 
     if (!defined $command) {
+        usage(0);
+    }
+
+    if ((scalar @ARGV) == 2) {
+        $branch = $ARGV[1];
+    } elsif ((scalar @ARGV) == 3) {
+        $owner = $ARGV[1];
+        $branch = $ARGV[2];
+    } else {
         usage(0);
     }
 
