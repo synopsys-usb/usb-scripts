@@ -183,12 +183,13 @@ sub sync {
         return;
     }
 
+    cmd("git fetch $PROJ_ID");
+
     if (!cmd("git branch -r | grep $PROJ_ID/$branch > /dev/null")) {
         print "$branch is not found\n";
         return;
     }
 
-    cmd("git fetch $PROJ_ID");
     cmd("git checkout -f $branch");
     cmd("git reset --hard $PROJ_ID/$branch");
 }
