@@ -120,10 +120,22 @@ sub print_all {
 }
 
 sub main {
-    my $offset = shift @ARGV;
+    my $option = shift @ARGV;
+    my $offset;
+    my $is_decode;
+
+    usage(0) unless defined $option;
+
+    if ($option eq "decode") {
+        $offset = shift @ARGV;
+        $is_decode = 1;
+    } else {
+        $offset = $option;
+        $is_decode = 0;
+    }
+
     my $bitfield = shift @ARGV;
 
-    usage(0) unless defined $offset;
 
     if (!validate_hex($offset)) {
         die("Invalid hex offset $offset\n");
@@ -133,10 +145,11 @@ sub main {
 
     my $no_base;
     if ($SCRIPT eq "rd") {
-	$no_base = 1;
+        $no_base = 1;
     }
 
-    my $value = rreg($offset, $no_base);
+    my $value = ($is_decode) ? $offset : rreg($offset, $no_base);
+
     usage(1) unless defined $value;
 
     if (defined $bitfield) {

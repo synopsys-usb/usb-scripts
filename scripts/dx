@@ -1,0 +1,14 @@
+#!/usr/bin/perl
+
+use strict;
+
+description("Print hex with field value");
+
+if (scalar @ARGV == 2) {
+    system("rreg decode $ARGV[0] $ARGV[1]");
+} elsif (scalar @ARGV == 1) {
+    my $length = (4 * (length $ARGV[0])) - 1;
+    system("rreg decode $ARGV[0] $length:0");
+} else {
+    die ("No hex value provided\n");
+}
