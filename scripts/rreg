@@ -3,7 +3,6 @@
 use strict;
 
 description("Read register");
-run_as_root();
 
 sub usage {
     my $exit_code = shift;
@@ -130,6 +129,7 @@ sub main {
         $offset = shift @ARGV;
         $is_decode = 1;
     } else {
+        run_as_root();
         $offset = $option;
         $is_decode = 0;
     }
