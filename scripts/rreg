@@ -119,23 +119,23 @@ sub print_all {
 }
 
 sub main {
-    my $option = shift @ARGV;
+    my $option = $ARGV[0];
     my $offset;
     my $is_decode;
+    my $bitfield;
 
     usage(0) unless defined $option;
 
     if ($option eq "decode") {
-        $offset = shift @ARGV;
+        $offset = $ARGV[1];
+        $bitfield = $ARGV[2];
         $is_decode = 1;
     } else {
         run_as_root();
-        $offset = $option;
+        $offset = $ARGV[0];
+        $bitfield = $ARGV[1];
         $is_decode = 0;
     }
-
-    my $bitfield = shift @ARGV;
-
 
     if (!validate_hex($offset)) {
         die("Invalid hex offset $offset\n");
