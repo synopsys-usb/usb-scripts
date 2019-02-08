@@ -69,7 +69,7 @@ sub main {
     $value = hex($value);
 
     my $no_base;
-    if ($SCRIPT eq "wr" or $offset_length == 8) {
+    if ($offset_length == 8) {
         $no_base = 1;
     }
 

@@ -41,7 +41,7 @@ sub main {
     $offset = hex($offset);
 
     my $no_base;
-    if ($SCRIPT eq "rd" or $offset_length == 8) {
+    if ($offset_length == 8) {
         $no_base = 1;
     }
 
