@@ -2,13 +2,140 @@
 
 use strict;
 
-description("Print hex with field value");
+description("Decode hex with field value");
 
-if (scalar @ARGV == 2) {
-    system("rreg decode $ARGV[0] $ARGV[1]");
-} elsif (scalar @ARGV == 1) {
-    my $length = (4 * (length $ARGV[0])) - 1;
-    system("rreg decode $ARGV[0] $length:0");
-} else {
-    die ("No hex value provided\n");
+sub usage {
+    my $exit_code = shift;
+
+    print <<EOF;
+usage: $SCRIPT <hex> [<bits>]
+
+Decode a hex value
+
+<hex> is a hex value.
+<bits> is an integer or bitfield.
+
+Example:
+    dx 16c3 2:0
+EOF
+
+    exit $exit_code;
 }
+
+
+# get_bit(value, index)
+# Returns the bit at index
+sub get_bit {
+    my ($value, $index) = @_;
+    return ($value >> $index) & 0x1;
+}
+
+# print_graphic(hex, low, high)
+#
+# Prints a graphical binary field that shows all the bits
+# within the field.
+sub print_graphic {
+    my ($hex, $low, $high) = @_;
+    my $out = "";
+    my $bit_index = "";
+    my $field_size = $high - $low + 1;
+
+    return if $field_size == 1;
+
+    $out .= "+---" x $field_size . "+\n|";
+    for my $index ($low..$high) {
+        my $i = $high - $index + $low;
+        $i = $low if $field_size == 1;
+
+        $out .= " " . get_bit($hex, $i) . "  ";
+        if (($index == $low) ||
+            ($index == $high) ||
+            !($i % 4)) {
+            $bit_index .= sprintf(" %-3s", "D$i");
+        } else {
+            $bit_index .= "    ";
+        }
+    }
+    $out =~ s/.$/|/;
+    $out .= "\n" . "+---" x $field_size . "+\n";
+    $out = "$bit_index\n" .$out;
+
+    print "$out\n";
+}
+
+# print_bitfield(value, low, high)
+#
+# Prints the value at range.
+sub print_bitfield {
+    my ($value, $low, $high) = @_;
+    my $mask = genmask($low, $high);
+
+    if ($high == $low) {
+        print "Bit [$low]:\n";
+    } else {
+        print "Bits [$high:$low]:\n";
+    }
+
+    my $bits = ($value & $mask) >> $low;
+
+    printf("  Hex: %x\n" , $bits);
+    printf("  Decimal: %d\n", $bits);
+    printf("  Binary: %0*b\n", $high - $low + 1, $bits);
+}
+
+# print_bin(hex)
+#
+# Prints the hex value to binary and space separated every nibble
+sub binary_str {
+    my $value = shift;
+    my $out = "";
+
+    for my $index (0..7) {
+        my $shift = (7 - $index) * 4;
+        my $nibble = ($value >> $shift) & 0xf;
+        $out .= sprintf("%04b ", $nibble);
+    }
+
+    return $out;
+}
+
+# print_all(hex, low, high)
+#
+# Calls print_graphic() print_value() and print_bin() and prints a
+# graphical binary field that shows all the bits within the field.
+sub print_all {
+    my $value = shift;
+    my $bitfield = shift;
+    my ($low, $high) = parse_bitfield($bitfield);
+
+    printf "Hex: %x\n", $value;
+    printf "Binary: %s\n", binary_str($value);
+    print  "\n";
+    print_bitfield($value, $low, $high);
+    print  "\n";
+    print_graphic($value, $low, $high);
+}
+
+sub main {
+    my $value = $ARGV[0];
+    my $bitfield = $ARGV[1];
+
+    usage(0) unless defined $value;
+
+    if (!validate_hex($value)) {
+        die("Invalid hex value $value\n");
+    }
+
+    $value = hex($value);
+
+    if (defined $bitfield) {
+        print_all($value, $bitfield);
+    } else {
+        my $size = (4 * (length $ARGV[0])) - 1;
+        print_all($value, "$size:0");
+    }
+
+    exit(0);
+}
+
+main();
