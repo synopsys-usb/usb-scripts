@@ -60,12 +60,17 @@ sub main {
         print_usage(-1);
     }
 
+    my $offset_length = length $offset;
+    if ($offset_length > 4 and $offset_length != 8) {
+        die("Invalid hex offset $offset\n");
+    }
+
     $offset = hex($offset);
     $value = hex($value);
 
     my $no_base;
-    if ($SCRIPT eq "wr") {
-	$no_base = 1;
+    if ($SCRIPT eq "wr" or $offset_length == 8) {
+        $no_base = 1;
     }
 
     if (defined $bitfield) {

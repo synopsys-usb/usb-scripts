@@ -33,10 +33,15 @@ sub main {
         die("Invalid hex offset $offset\n");
     }
 
+    my $offset_length = length $offset;
+    if ($offset_length > 4 and $offset_length != 8) {
+        die("Invalid hex offset $offset\n");
+    }
+
     $offset = hex($offset);
 
     my $no_base;
-    if ($SCRIPT eq "rd") {
+    if ($SCRIPT eq "rd" or $offset_length == 8) {
         $no_base = 1;
     }
 
