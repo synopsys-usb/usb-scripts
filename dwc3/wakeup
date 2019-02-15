@@ -6,13 +6,9 @@ description("Request remote wakeup");
 run_as_root();
 
 sub main {
-    if (plat_is_x86()) {
-        my $debugfs = dwc3_debugfs();
-        if (defined $debugfs and -e "$debugfs/wakeup") {
-            cmd("echo > $debugfs/wakeup");
-        } else {
-            die("Remote wakeup is not available\n");
-        }
+    my $srp = "/sys/class/udc/dwc3.0.auto/srp";
+    if (plat_is_x86() and -e $srp) {
+        cmd("echo 1 > $srp");
     }
 }
 
