@@ -27,13 +27,23 @@ USAGE_EOF
 
 sub print_status {
     my $snpsid = rreg(0xc120);
+    my $is_usb32 = ($snpsid >> 16 == 0x3332) ? 1 : 0;
     my $is_usb31 = ($snpsid >> 16 == 0x3331) ? 1 : 0;
     my $is_usb3 = ($snpsid >> 16 == 0x5533) ? 1 : 0;
 
     my $GDBGLTSSM;
     my $rtl_ver = "Unknown";
+    my $ver_name;
 
     if ($is_usb31) {
+        $ver_name = "DWC_usb31";
+    } elsif ($is_usb32) {
+        $ver_name = "DWC_usb32";
+    } elsif ($is_usb3) {
+        $ver_name = "DWC_usb3";
+    }
+
+    if ($is_usb31 or $is_usb32) {
         $GDBGLTSSM = rreg(0xd050);
 
         my $ver_num = rreg(0xc1a0);
@@ -42,14 +52,14 @@ sub print_status {
 
         my $ver_type = rreg(0xc1a4);
         my $ver_type_ascii = pack "N*", $ver_type;
-        $rtl_ver = "dwc_usb31 v$ver_num_ascii-$ver_type_ascii";
+        $rtl_ver = "$ver_name v$ver_num_ascii-$ver_type_ascii";
     } elsif ($is_usb3) {
         $GDBGLTSSM = rreg(0xc164);
 
         my $ver_num = $snpsid & 0xffff;
         my $ver_num_ascii = sprintf "%x", $ver_num;
         $ver_num_ascii =~ s/(\d)(.*)/$1.$2/;
-        $rtl_ver = "dwc_usb3 v$ver_num_ascii";
+        $rtl_ver = "$ver_name v$ver_num_ascii";
     }
 
     my $GHWPARAMS0 = rreg(0xc140);
