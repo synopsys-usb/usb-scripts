@@ -111,13 +111,16 @@ sub init {
 
 sub status {
     my $branch = shift;
+    my $commit;
+    my $ret;
 
     if (!defined $branch) {
         print "Please provide branch name\n";
         return;
     }
 
-    if (!cmd("git branch -r | grep $PROJ_ID/$branch > /dev/null")) {
+    $ret = cmd("git show --oneline -s $branch 2> /dev/null", \$commit);
+    if (!$ret or ! $commit =~ /(?:tag: $branch)\|(?:$PROJ_ID\/$branch)/) {
         print "$branch is not found\n";
         return;
     }
@@ -177,6 +180,8 @@ sub add_repo {
 
 sub sync {
     my $branch = shift;
+    my $commit;
+    my $ret;
 
     if (!defined $branch) {
         print "Please provide branch name\n";
@@ -185,7 +190,8 @@ sub sync {
 
     cmd("git fetch $PROJ_ID");
 
-    if (!cmd("git branch -r | grep $PROJ_ID/$branch > /dev/null")) {
+    $ret = cmd("git show --oneline -s $branch 2> /dev/null", \$commit);
+    if (!$ret or ! $commit =~ /(?:tag: $branch)\|(?:$PROJ_ID\/$branch)/) {
         print "$branch is not found\n";
         return;
     }
