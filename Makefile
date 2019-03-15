@@ -19,8 +19,6 @@ uninstall:
 	@rm -rf $(HOME)/bin/dwc_utils
 endif
 
-DWC_LIB_DIR := $(INSTALL_DIR)/lib
-
 # Set libdir to the absolute path in the installed system where the
 # binaries are installed. Normally this is the same as INSTALL_DIR
 # however if installing to a rootfs image, then this will be
@@ -30,6 +28,8 @@ MODULE_DIR := $(libdir)
 else
 MODULE_DIR := $(INSTALL_DIR)
 endif
+
+DWC_LIB_DIR := $(MODULE_DIR)/lib
 
 INSTALL := $(realpath ./scripts/install.pl)
 INSTALL := $(INSTALL) $(MODULE_DIR)
