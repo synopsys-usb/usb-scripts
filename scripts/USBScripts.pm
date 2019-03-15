@@ -287,10 +287,9 @@ sub rreg {
 }
 
 sub wreg {
-    my $offset = shift;
+    my $address = shift;
     my $value = shift;
     my $no_base = shift;
-    my $address = $offset;
 
     if (!(defined $no_base)) {
 	$address += base();
