@@ -216,7 +216,7 @@ sub base {
         my @ids;
         my $pci;
 
-        _cmd("setpci -d 16c3: DEVICE_ID", \@ids)
+        _cmd("setpci -f -d 16c3: DEVICE_ID", \@ids)
             or die("Couldn't examine PCI bus\n");
 
         chomp @ids;
