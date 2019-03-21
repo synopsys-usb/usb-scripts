@@ -414,7 +414,12 @@ sub dwc3_debugfs {
 }
 
 sub dwc3_pci_debugfs {
-    return debugfs("dwc3-haps");
+    my $pci_domain;
+    _cmd("lspci -D -d 16c3: | awk '{ print \$1 }'", \$pci_domain)
+        or return undef;
+
+    chomp $pci_domain;
+    return debugfs($pci_domain);
 }
 
 sub dwc2_debugfs {
