@@ -10,13 +10,8 @@ default: build
 
 ifneq ($(prefix),)
 INSTALL_DIR := $(abspath $(prefix)/dwc_utils)
-uninstall:
-
 else
 INSTALL_DIR := $(HOME)/bin/dwc_utils
-uninstall:
-	@echo Uninstalling from $(INSTALL_DIR)...
-	@rm -rf $(HOME)/bin/dwc_utils
 endif
 
 # Set libdir to the absolute path in the installed system where the
@@ -47,6 +42,10 @@ export CC INSTALL_DIR DWC_LIB_DIR MODULE_DIR LINK_DIR INSTALL
 
 build:
 	@$(MAKE) -s -C src
+
+uninstall:
+	@echo Uninstalling from $(INSTALL_DIR)...
+	@rm -rf $(INSTALL_DIR)
 
 init_version:
 	@echo $(USBSCRIPTS_VERSION)-`scripts/gitversion` > VERSION
