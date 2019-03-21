@@ -14,13 +14,13 @@ install_other:
 	@$(INSTALL) 0644 $(INSTALL_DIR) $(PERL_MODULES) $(OTHER)
 
 make_links:
-	@ln -fs $(DWC_LIB_DIR)/dwc.pl $(INSTALL_DIR)/xhci
-	@ln -fs $(DWC_LIB_DIR)/dwc.pl $(INSTALL_DIR)/dwc3-xhci
-	@ln -fs $(DWC_LIB_DIR)/dwc.pl $(INSTALL_DIR)/dwc3
-	@ln -fs $(DWC_LIB_DIR)/dwc.pl $(INSTALL_DIR)/dwc2
-	@ln -fs $(DWC_LIB_DIR)/dwc.pl $(INSTALL_DIR)/typec
-	@ln -fs $(DWC_LIB_DIR)/dwc.pl $(INSTALL_DIR)/haps
-	@ln -fs $(DWC_LIB_DIR)/audio $(INSTALL_DIR)/audio
+	@ln -fs $(LINK_DIR)/dwc.pl $(INSTALL_DIR)/xhci
+	@ln -fs $(LINK_DIR)/dwc.pl $(INSTALL_DIR)/dwc3-xhci
+	@ln -fs $(LINK_DIR)/dwc.pl $(INSTALL_DIR)/dwc3
+	@ln -fs $(LINK_DIR)/dwc.pl $(INSTALL_DIR)/dwc2
+	@ln -fs $(LINK_DIR)/dwc.pl $(INSTALL_DIR)/typec
+	@ln -fs $(LINK_DIR)/dwc.pl $(INSTALL_DIR)/haps
+	@ln -fs $(LINK_DIR)/audio $(INSTALL_DIR)/audio
 
 install: install_run install_other make_links
 

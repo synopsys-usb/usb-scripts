@@ -31,10 +31,19 @@ endif
 
 DWC_LIB_DIR := $(MODULE_DIR)/lib
 
+# Set lndir to direrctory of the lib scripts installed from rootfs. For
+# example, lndir=/root/bin/dwc_utils
+# This is applicable to buildroot only.
+ifneq ($(lndir),)
+LINK_DIR := $(lndir)
+else
+LINK_DIR := $(DWC_LIB_DIR)
+endif
+
 INSTALL := $(realpath ./scripts/install.pl)
 INSTALL := $(INSTALL) $(MODULE_DIR)
 
-export CC INSTALL_DIR DWC_LIB_DIR MODULE_DIR INSTALL
+export CC INSTALL_DIR DWC_LIB_DIR MODULE_DIR LINK_DIR INSTALL
 
 build:
 	@$(MAKE) -s -C src
