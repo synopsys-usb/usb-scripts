@@ -8,7 +8,7 @@ _MKDIR		:= $(shell mkdir -p $(OUT_DIR))
 default: build
 
 install: build
-	@$(INSTALL) 0755 $(DWC_LIB_DIR) $(BINARIES)
+	@$(INSTALL) 0755 $(INSTALL_DIR)/lib $(BINARIES)
 
 $(OUT_DIR)/%: %.c
 	@echo CC $<

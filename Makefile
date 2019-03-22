@@ -14,31 +14,19 @@ else
 INSTALL_DIR := $(HOME)/bin/dwc_utils
 endif
 
-# Set libdir to the absolute path in the installed system where the
-# binaries are installed. Normally this is the same as INSTALL_DIR
-# however if installing to a rootfs image, then this will be
-# different.
-ifneq ($(libdir),)
-MODULE_DIR := $(libdir)
-else
-MODULE_DIR := $(INSTALL_DIR)
-endif
-
-DWC_LIB_DIR := $(MODULE_DIR)/lib
-
-# Set lndir to direrctory of the lib scripts installed from rootfs. For
-# example, lndir=/root/bin/dwc_utils
-# This is applicable to buildroot only.
+# Set lndir to link location of the lib scripts installed in rootfs.
+# For example, lndir=/root/bin/dwc_utils
+# This is needed when generating rootfs from buildroot.
 ifneq ($(lndir),)
 LINK_DIR := $(lndir)
 else
-LINK_DIR := $(DWC_LIB_DIR)
+LINK_DIR := $(INSTALL_DIR)
 endif
 
 INSTALL := $(realpath ./scripts/install.pl)
 INSTALL := $(INSTALL) $(LINK_DIR)
 
-export CC INSTALL_DIR DWC_LIB_DIR MODULE_DIR LINK_DIR INSTALL
+export CC INSTALL_DIR LINK_DIR INSTALL
 
 build:
 	@$(MAKE) -s -C src
