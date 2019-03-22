@@ -42,11 +42,11 @@ sub tag_use_module {
 }
 
 sub main {
-    my $moddir = shift @ARGV;
+    my $lndir = shift @ARGV;
     my $mode = shift @ARGV;
     my $dir = shift @ARGV;
 
-    die "No MODULE_DIR" unless defined $moddir;
+    die "No LINK_DIR" unless defined $lndir;
     die "No mode" unless defined $mode;
     die "No INSTALL_DIR" unless defined $dir;
 
@@ -74,7 +74,7 @@ sub main {
         my $contents = read_file($file);
         if ($contents =~ m/(^\#\!\/usr\/bin\/perl.*\n)/) {
             $perl = 1;
-            $contents =~ s/($1)/$1\nuse lib '$moddir';\n$modules/;
+            $contents =~ s/($1)/$1\nuse lib '$lndir';\n$modules/;
             $file = "$file.install";
             write_file($file, $contents);
         }

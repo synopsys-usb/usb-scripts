@@ -36,7 +36,7 @@ LINK_DIR := $(DWC_LIB_DIR)
 endif
 
 INSTALL := $(realpath ./scripts/install.pl)
-INSTALL := $(INSTALL) $(MODULE_DIR)
+INSTALL := $(INSTALL) $(LINK_DIR)
 
 export CC INSTALL_DIR DWC_LIB_DIR MODULE_DIR LINK_DIR INSTALL
 
