@@ -13,6 +13,7 @@ my $SNPS_PID_UAC = 0x8BD9;
 my $MSC_PARAMS = "modprobe g_mass_storage " .
                  "idVendor=$SNPS_VID idProduct=$SNPS_PID_MSC " .
                  "file=/dev/ram0 " .
+                 "num_buffers=8 " .
                  "iSerialNumber=000020160529 removable=0";
 
 my $UAC2_PARAMS = "modprobe g_audio " .
