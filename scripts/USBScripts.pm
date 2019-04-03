@@ -191,6 +191,8 @@ my $PCI_PIDS = {
     "9001" => "DP",
 };
 
+my $PCI_VID = "16c3";
+
 #
 # Returns the base address or bus domain of the controller
 #
@@ -216,12 +218,12 @@ sub base {
         my @ids;
         my $pci;
 
-        _cmd("setpci -f -d 16c3: DEVICE_ID", \@ids)
+        _cmd("setpci -f -d $PCI_VID: DEVICE_ID", \@ids)
             or die("Couldn't examine PCI bus\n");
 
         chomp @ids;
 
-        _cmd("lspci -D -n -d 16c3: | awk '{ print \$1 }'", \@pci_bus)
+        _cmd("lspci -D -n -d $PCI_VID: | awk '{ print \$1 }'", \@pci_bus)
             or die("Couldn't examine PCI bus, check lspci\n");
 
         chomp @pci_bus;
@@ -243,20 +245,20 @@ sub base {
         }
 
         my $addr;
-        _cmd("setpci -d 16c3:$id BASE_ADDRESS_0", \$addr);
+        _cmd("setpci -d $PCI_VID:$id BASE_ADDRESS_0", \$addr);
         chomp($addr);
         $_BASE = hex($addr) & 0xffff0000;
 
-        _cmd("setpci -d 16c3:$id BASE_ADDRESS_2", \$addr);
+        _cmd("setpci -d $PCI_VID:$id BASE_ADDRESS_2", \$addr);
         chomp($addr);
         $_BASE_2 = hex($addr) & 0xfffff000;
 
         my $pci_cmd;
-        _cmd("setpci -d 16c3:$id COMMAND", \$pci_cmd);
+        _cmd("setpci -d $PCI_VID:$id COMMAND", \$pci_cmd);
         chomp $pci_cmd;
         if (!(($pci_cmd >> 1) & 0x1)) {
             $pci_cmd |= 2;
-            _cmd("sudo setpci -d 16c3:$id COMMAND=$pci_cmd");
+            _cmd("sudo setpci -d $PCI_VID:$id COMMAND=$pci_cmd");
         }
 
         if (defined $get_bus) {
@@ -415,7 +417,7 @@ sub dwc3_debugfs {
 
 sub dwc3_pci_debugfs {
     my $pci_domain;
-    _cmd("lspci -D -d 16c3: | awk '{ print \$1 }'", \$pci_domain)
+    _cmd("lspci -D -d $PCI_VID: | awk '{ print \$1 }'", \$pci_domain)
         or return undef;
 
     chomp $pci_domain;
