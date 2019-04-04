@@ -7,10 +7,7 @@ run_as_root();
 autodie();
 
 sub main {
-    my $arg = shift @ARGV;
-
-    unload();
-
+    rmmod("snps-phy-tc");
     cmd("modprobe snps-phy-tc");
 }
 

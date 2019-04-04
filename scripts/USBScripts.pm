@@ -353,7 +353,6 @@ sub unload {
         rmmod("dwc3", "dwc3_haps", "dwc3_pci");
         rmmod("dwc2", "dwc2_pci");
         rmmod("udc_core");
-        rmmod("snps_phy_tc");
         rmmod("phy_generic");
         if (plat_is_x86()) {
             my $pci_bus = base(1);
