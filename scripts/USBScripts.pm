@@ -217,6 +217,7 @@ sub base {
         my @pci_bus;
         my @ids;
         my $pci;
+        my $tcphy = 0;
 
         _cmd("setpci -f -d $PCI_VID: DEVICE_ID", \@ids)
             or die("Couldn't examine PCI bus\n");
@@ -235,6 +236,10 @@ sub base {
         $_PCI_BUS = $pci_bus[0];
         my $id = $ids[0];
         for (@ids) {
+            if ($_ eq "abc3" or $_ eq "abc1") {
+                $tcphy = 1;
+            }
+
             if (defined ($TYPE) && exists $PCI_PIDS->{$_} && ($TYPE eq $PCI_PIDS->{$_})) {
                 $id = $_;
             }
@@ -251,7 +256,9 @@ sub base {
 
         _cmd("setpci -d $PCI_VID:$id BASE_ADDRESS_2", \$addr);
         chomp($addr);
-        $_BASE_2 = hex($addr) & 0xfffff000;
+        if (defined $addr and not $tcphy) {
+            $_BASE_2 = hex($addr) & 0xfffff000;
+        }
 
         my $pci_cmd;
         _cmd("setpci -d $PCI_VID:$id COMMAND", \$pci_cmd);
