@@ -1,0 +1,14 @@
+#!/usr/bin/perl
+
+use strict;
+
+description("Unload the Type-C module");
+run_as_root();
+autodie();
+
+sub main {
+    rmmod("snps-phy-tc");
+}
+
+main();
+

@@ -338,7 +338,6 @@ sub unload {
             rmmod("dwc3");
             rmmod("phy_generic");
         } elsif (plat_is_x86()) {
-            rmmod("snps_phy_tc");
             rmmod("xhci_plat_hcd");
             rmmod("dwc3", "dwc3_haps", "dwc3_pci");
             rmmod("xhci_pci");
